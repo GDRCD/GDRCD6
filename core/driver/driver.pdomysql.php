@@ -55,7 +55,7 @@ class DB implements DatabaseDriver
     public function __construct($host, $user, $pass, $database)
     {
         try {
-		
+            
             $this->DBObj = new PDO(
                 "mysql:host={$host};dbname={$database};charset=utf8", 
                 $user, 
@@ -65,11 +65,11 @@ class DB implements DatabaseDriver
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
                 )
             );
-		
+        
         } catch (PDOException $e) {
-		
+        
             throw new Exception($e->getMessage());
-			
+            
         }
     }
     

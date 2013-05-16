@@ -155,8 +155,8 @@ class GDRCD
             . 'driver'
             . GDRCD_DS
             . 'driver.' . GDRCD_DATABASE_DRIVER . '.php';
-				
-		if (!in_array($driverPath, self::$includedFiles)) {
+
+        if (!in_array($driverPath, self::$includedFiles)) {
             
             if (is_readable($driverPath)) {
                 self::$includedFiles[] = $driverPath;
@@ -165,7 +165,7 @@ class GDRCD
             } else {
                 throw new Exception("Core file doesn't exists or it is unaccessible in '$driverPath'");
             }
-		}
+        }
         
         
         if (empty($this->coreInstances['DB']) || $forceNewInstance) {
@@ -197,14 +197,14 @@ class GDRCD
         * @throws Exception
     */
     private function loadCore($className)
-	{
-		$className = 
+    {
+        $className = 
             dirname(__FILE__)
             . GDRCD_DS
             . $className
             . '.class.php';
-				
-		if (!in_array($className, self::$includedFiles)) {
+        
+        if (!in_array($className, self::$includedFiles)) {
             
             if (is_readable($className)) {
                 self::$includedFiles[] = $className;
@@ -213,8 +213,8 @@ class GDRCD
             } else {
                 throw new Exception("Core file doesn't exists or it is unaccessible in '$className'");
             }
-		}
-	}
+        }
+    }
     
     
     /**
@@ -228,8 +228,8 @@ class GDRCD
         * @throws Exception
     */
     private function loadController($className)
-	{
-		$className = 
+    {
+        $className = 
             dirname(dirname(__FILE__))
             . GDRCD_DS
             . 'application'
@@ -240,8 +240,8 @@ class GDRCD
             . GDRCD_DS
             . $className
             . '.class.php';
-				
-		if (!in_array($className, self::$includedFiles)) {
+
+        if (!in_array($className, self::$includedFiles)) {
             
             if (is_readable($className)) {
                 self::$includedFiles[] = $className;
@@ -253,34 +253,34 @@ class GDRCD
                     . $this->currentApplication() 
                     . "] Controller file doesn't exists or it is unaccessible in '$className'");
             }
-		}
-	}
+        }
+    }
 
 
     /**
         * Registra il metodo che permette l'autoinclusione dei controller richiesti
     */
-	private function autoloadRegister()
-	{
-		spl_autoload_register(array($this, 'loadController'));	
-	} 
+    private function autoloadRegister()
+    {
+        spl_autoload_register(array($this, 'loadController'));	
+    } 
 
 
     /**
         * Annulla la registrazione del metodo che permette l'autoinclusione dei controller richiesti
     */
-	private function autoloadUnregister()
-	{
-		spl_autoload_unregister(array($this, 'loadController'));	
-	}
-	
+    private function autoloadUnregister()
+    {
+        spl_autoload_unregister(array($this, 'loadController'));	
+    }
+    
 
     /**
         * Deinizializza le risorse impiegate per l'avvio del core e distrugge l'istanza corrente
         * della classe
     */
-	public function __destruct()
-	{
+    public function __destruct()
+    {
         $this->autoloadUnregister();
-	}
+    }
 }

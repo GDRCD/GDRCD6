@@ -28,12 +28,12 @@ define('GDRCD_DS', DIRECTORY_SEPARATOR);
 /**
     * #TO DO
     * true: predispone l'engine all'uso dell URL REWRITE
-    * false: disabilit√† la possibilit√† di utilizzo dell'URL REWRITE.
+    * false: disabilit‡ la possibilit‡ di utilizzo dell'URL REWRITE.
 */
 define('GDRCD_URLREWRITE', false);
 
 
-################# Da qui non toccare nulla se non sai ci√≤ che fai, per cortesia :) #################
+################# Da qui non toccare nulla se non sai ciÚ che fai, per cortesia :) #################
 
 
 require 'core/GDRCD.class.php';

@@ -1,7 +1,7 @@
 <?php
 /**
     * GDRCD Controller Class
-    * Lo scopo di questa classe astratta è quello di formare i controller di modo che siano predisposti
+    * Lo scopo di questa classe astratta ï¿½ quello di formare i controller di modo che siano predisposti
     * a poter essere estesi dai metodi astratti. Si occupa quindi di tenere traccia anche delle istanze 
     * dei metodi e di controllarne la reale appartenenza allo specifico controller
     * 
@@ -16,57 +16,57 @@ abstract class Controller
 
 
     /**
-        * Grazie a questo metodo i controller ottengono la capacità di essere estesi
+        * Grazie a questo metodo i controller ottengono la capacitï¿½ di essere estesi
         * ulteriormente da altre classi che verranno richiamate come fossero metodi del 
         * controller stesso.
         * Quando viene richiamato un metodo che non esiste nel controller questo viene
         * contattato ricevendo come parametri il nome del metodo ($method) che si tenta 
         * di chiamare e gli eventuali parametri ($params) ad esso assegnati.
     */
-	public function __call($method, $params = null)
-	{
-		$controllerClass = get_class($this);
-		
-		if (
+    public function __call($method, $params = null)
+    {
+        $controllerClass = get_class($this);
+    
+        if (
             isset($this->methodInstances[$controllerClass]) && 
             !empty($this->methodInstances[$controllerClass][$method])
             )
-				return $this->methodInstances[$controllerClass][$method]->execute();
-		
-		
-		if (
+                return $this->methodInstances[$controllerClass][$method]->execute();
+
+
+        if (
             !isset($this->methodInstances[$controllerClass]) || 
             empty($this->methodInstances[$controllerClass][$method])
             )
-		{
-			$this->loadMethod($controllerClass, $method);
-			
-			if (class_exists($method))
-			{
+        {
+            $this->loadMethod($controllerClass, $method);
+            
+            if (class_exists($method))
+            {
                 if (!isset($this->methodInstances[$controllerClass]))
                         $this->methodInstances[$controllerClass] = array();
                         
-				$this->methodInstances[$controllerClass][$method] = new $method();
-				
-				return $this->methodInstances[$controllerClass][$method]->execute();
-			
-			}else
-			{
-				throw new Exception(
+                $this->methodInstances[$controllerClass][$method] = new $method();
+                
+                return $this->methodInstances[$controllerClass][$method]->execute();
+                
+            }else
+            {
+                throw new Exception(
                     "[Application: " 
                     . GDRCD::$self->currentApplication()
                     . "] Method '$method' not exists in controller class '$class'");
-			}
-		}
-	}
+            }
+        }
+    }
 
 
     /**
         * Include il metodo richiesto sotto il controller specificato
     */
     private function loadMethod($className, $methodName)
-	{
-		$methodName = 
+    {
+        $methodName = 
             dirname(dirname(__FILE__))
             . GDRCD_DS
             . 'application'
@@ -80,7 +80,7 @@ abstract class Controller
             . $methodName
             . '.php';
         
-		if (!in_array($methodName, GDRCD::$includedFiles)) {
+        if (!in_array($methodName, GDRCD::$includedFiles)) {
             
             if (is_readable($methodName)) {
                 GDRCD::$includedFiles[] = $methodName;
@@ -92,6 +92,6 @@ abstract class Controller
                     . GDRCD::$self->currentApplication()
                     . "] Method file doesn't exists or it is unaccessible in '$methodName'");
             }
-		}
-	}
+        }
+    }
 }
