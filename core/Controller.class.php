@@ -1,7 +1,7 @@
 <?php
 /**
     * GDRCD Controller Class
-    * Lo scopo di questa classe astratta � quello di formare i controller di modo che siano predisposti
+    * Lo scopo di questa classe astratta è quello di formare i controller di modo che siano predisposti
     * a poter essere estesi dai metodi astratti. Si occupa quindi di tenere traccia anche delle istanze 
     * dei metodi e di controllarne la reale appartenenza allo specifico controller
     * 
@@ -16,7 +16,7 @@ abstract class Controller
 
 
     /**
-        * Grazie a questo metodo i controller ottengono la capacit� di essere estesi
+        * Grazie a questo metodo i controller ottengono la capacità di essere estesi
         * ulteriormente da altre classi che verranno richiamate come fossero metodi del 
         * controller stesso.
         * Quando viene richiamato un metodo che non esiste nel controller questo viene
