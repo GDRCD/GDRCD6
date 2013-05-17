@@ -1,6 +1,6 @@
 # GDRCD 6
 
-GDRCD come CMS per lo sviluppo di giochi di ruolo "Play By Chat".
+GDRCD nasce come CMS per lo sviluppo di giochi di ruolo "Play By Chat".
 
 __Fai Attenzione__: questa versione è ancora in fase di sviluppo, se stai cercando un CMS per creare il tuo 
 gioco di ruolo su chat, forse stavi cercando [GDRCD 5.2](https://github.com/GDRCD/GDRCD)
