@@ -68,21 +68,25 @@ Ci si rifà alla sintassi JavaDoc, nei seguenti modi:
         * Commento generico che può esser posto per spiegare il funzionamento di variabili o altro
     */
 
-#### Micro Commento
+#### Micro commento
 
     #> Commento non rilevato dalla doc, da usare solo per piccole indicazioni nel file
 
 
 ### Parentesi graffe
 
-#### Per classi e/o funzioni sia la parentesi di apertura che quella di chiusura vanno sempre su un nuovo rigo
+#### Classi e funzioni
+
+Per classi e/o funzioni sia la parentesi di apertura che quella di chiusura vanno sempre su un nuovo rigo
  
     class MyClass
     {
         #> Some Code..
     }
 
-#### Per le espressioni logiche di linguaggio la parentesi di apertura rimane sul rigo corrente mentre quella di chiusura va su un nuovo rigo
+#### Strutture di controllo
+
+Per le strutture di controllo di linguaggio la parentesi di apertura rimane sul rigo corrente mentre quella di chiusura va su un nuovo rigo
 
     if ($something) {
         #> Some Code..
@@ -91,14 +95,14 @@ Ci si rifà alla sintassi JavaDoc, nei seguenti modi:
 
 ### Nomi funzioni, classi e metodi
 
-#### I nomi delle funzioni e dei metodi di una classe vanno definiti in `camelCase`
+I nomi delle funzioni e dei metodi di una classe vanno definiti in `camelCase`
 
     function myFunction()
     {
         #> Some Code..
     }
 
-#### I nomi delle classi vanno definiti in `StudlyCaps`
+I nomi delle classi vanno definiti in `StudlyCaps`
 
     class MyUberClass
     {
