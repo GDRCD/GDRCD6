@@ -1,43 +1,18 @@
 <?php
 /**
-    * PDO Mysql Driver
-    * La classe in questione adopera PDO per dialogare con un database mysql.
-    * Lo scopo non è implementare PDO e quindi rendere usabili i metodi dello stesso mediante un extends
-    * ma piuttosto fornire un interfaccia per l'utilizzo di PDO (non è un controsenso se si pensa che ha 
-    * i suoi limiti e qualcuno potrebbe dover necessitare di altro), così che solo i metodi di questa classe
-    * saranno utilizzati e gli stessi standardizzeranno il modo con cui vengono eseguite le query nel CMS.
-    * Tutto questo, permetterà di adoperare i più svariati driver (odbc, mysqli, sqlserver) senza dover 
-    * riscrivere altro in tutto l'engine (per maggiori info, googlate "abstraction layer").
-    * IMPORTANTE: per il presente driver è richiesto che nel php.ini sia abilitata l'estensione php_pdo_mysql.dll
-    * 
-    * @package \GDRCD\core\driver
-*/
-
-
-interface DatabaseDriver
-{
-    const FETCH_ASSOC   = 1;
-    const FETCH_NUM     = 2;
-    const FETCH_BOTH    = 3;
-    const FETCH_OBJ     = 4;
-
-    public function __construct($host, $user, $pass, $database);
-    
-    public function query($sql, $mode);
-    
-    public function stmtQuery($sql, $parameters, $mode);
-    
-    public function prepare($sql);
-    public function bind($placeholder, $data, $filter);
-    public function exec($mode);
-    
-    
-    public function __destruct();
-}
-
-
-
-class DB implements DatabaseDriver
+ * PDO Mysql Driver
+ * La classe in questione adopera PDO per dialogare con un database mysql.
+ * Lo scopo non è implementare PDO e quindi rendere usabili i metodi dello stesso mediante un extends
+ * ma piuttosto fornire un interfaccia per l'utilizzo di PDO (non è un controsenso se si pensa che ha 
+ * i suoi limiti e qualcuno potrebbe dover necessitare di altro), così che solo i metodi di questa classe
+ * saranno utilizzati e gli stessi standardizzeranno il modo con cui vengono eseguite le query nel CMS.
+ * Tutto questo, permetterà di adoperare i più svariati driver (odbc, mysqli, sqlserver) senza dover 
+ * riscrivere altro in tutto l'engine (per maggiori info, googlate "abstraction layer").
+ * IMPORTANTE: per il presente driver è richiesto che nel php.ini sia abilitata l'estensione php_pdo_mysql.dll
+ * 
+ * @package \GDRCD\core\driver
+ */
+class DbPdoMysql implements DatabaseDriver
 {
     private $DBObj;
     
@@ -50,7 +25,7 @@ class DB implements DatabaseDriver
         * @param (string) $pass <La password di accesso>
         * @param (string) $database <Il nome del database a cui si vuol accedere>
         *
-        * @throws Exeption
+        * @throws DBException se la connessione fallisce
     */
     public function __construct($host, $user, $pass, $database)
     {
@@ -68,7 +43,7 @@ class DB implements DatabaseDriver
         
         } catch (PDOException $e) {
         
-            throw new Exception($e->getMessage());
+            throw new DBException($e->getMessage());
             
         }
     }
@@ -94,7 +69,7 @@ class DB implements DatabaseDriver
         * @param (string) $sql <La query SQL richiesta>
         * @param (int) $mode <La modalità di ritorno dei dati>
         *
-        * @throws Exeption
+        * @throws DBException se la query fallisce
         * @return object <Un oggetto che contiene i dati richiesti ed altre proprietà>
 	*/
     public function query($sql, $mode = self::FETCH_ASSOC)
@@ -132,7 +107,7 @@ class DB implements DatabaseDriver
             
         } catch (PDOException $e) {
    
-            throw new Exception($e->getMessage());
+            throw new DBException($e->getMessage());
                 
         }
         
@@ -162,7 +137,7 @@ class DB implements DatabaseDriver
         * @param (array) $parameters <Elenco di valori da sostituire ai placeholder nella query>
         * @param (int) $mode <La modalità di ritorno dei dati>
         *
-        * @throws Exeption
+        * @throws DBException se il prepared statement fallisce
         * @return object <Un oggetto che contiene i dati richiesti ed altre proprietà>
     */
     public function stmtQuery($sql, $parameters = array(), $mode = self::FETCH_ASSOC)
@@ -202,7 +177,7 @@ class DB implements DatabaseDriver
             
         } catch (PDOException $e) {
    
-            throw new Exception($e->getMessage());
+            throw new DBException($e->getMessage());
             
         }
         
