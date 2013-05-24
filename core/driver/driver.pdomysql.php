@@ -18,15 +18,15 @@ class DbPdoMysql implements DatabaseDriver
     
     
     /**
-        * Il metodo inizializza la connessione al database
-        *
-        * @param (string) $host <L'host di connessione al database>
-        * @param (string) $user <Lo user di connessione>
-        * @param (string) $pass <La password di accesso>
-        * @param (string) $database <Il nome del database a cui si vuol accedere>
-        *
-        * @throws DBException se la connessione fallisce
-    */
+     * Il metodo inizializza la connessione al database
+     *
+     * @param (string) $host L'host di connessione al database
+     * @param (string) $user Lo user di connessione
+     * @param (string) $pass La password di accesso
+     * @param (string) $database Il nome del database a cui si vuol accedere
+     *
+     * @throws DBException se la connessione fallisce
+     */
     public function __construct($host, $user, $pass, $database)
     {
         try {
@@ -50,28 +50,28 @@ class DbPdoMysql implements DatabaseDriver
     
     
     /**
-        * Permette di spedire una qualsiasi query al database e ne ritorna i dati.
-        * Il parametro $mode permette di stabilire in che modo i dati vengono ritornati
-        * dal metodo, mediante 4 costanti predefinite dalla classe:
-        *
-        *   . DB::FETCH_ASSOC <ritorna i dati in un array associativo>
-        *   . DB::FETCH_NUM <ritorna i dati ordinati numericamente>
-        *   . DB::FETCH_BOTH <li ritorna sia associativi, sia con indicizzazione numerica>
-        *   . DB::FETCH_OBJ <ritorna i dati come oggetto>
-        *
-        * L'oggetto $result dispone inoltre delle seguenti proprietà:
-        *
-        *   . data <ritorna i dati recuperati dalla richiesta>
-        *   . num_rows <ritorna il numero di righe rintracciate dalla richiesta>
-        *   . insert_id <ritorna l'id di riga generato per l'ultima query di tipo insert>
-        *   . affected_rows <ritorna il numero di righe affette da un intervento di update/insert/delete>
-        *
-        * @param (string) $sql <La query SQL richiesta>
-        * @param (int) $mode <La modalità di ritorno dei dati>
-        *
-        * @throws DBException se la query fallisce
-        * @return object <Un oggetto che contiene i dati richiesti ed altre proprietà>
-	*/
+     * Permette di spedire una qualsiasi query al database e ne ritorna i dati.
+     * Il parametro $mode permette di stabilire in che modo i dati vengono ritornati
+     * dal metodo, mediante 4 costanti predefinite dalla classe:
+     *
+     *   . DB::FETCH_ASSOC <ritorna i dati in un array associativo>
+     *   . DB::FETCH_NUM <ritorna i dati ordinati numericamente>
+     *   . DB::FETCH_BOTH <li ritorna sia associativi, sia con indicizzazione numerica>
+     *   . DB::FETCH_OBJ <ritorna i dati come oggetto>
+     *
+     * L'oggetto $result dispone inoltre delle seguenti proprietà:
+     *
+     *   . data <ritorna i dati recuperati dalla richiesta>
+     *   . num_rows <ritorna il numero di righe rintracciate dalla richiesta>
+     *   . insert_id <ritorna l'id di riga generato per l'ultima query di tipo insert>
+     *   . affected_rows <ritorna il numero di righe affette da un intervento di update/insert/delete>
+     *
+     * @param (string) $sql La query SQL richiesta
+     * @param (int) $mode La modalità di ritorno dei dati
+     *
+     * @throws DBException se la query fallisce
+     * @return object Un oggetto che contiene i dati richiesti ed altre proprietà
+	 */
     public function query($sql, $mode = self::FETCH_ASSOC)
     {
         $mode = $this->evaluateConstants($mode);
@@ -116,30 +116,30 @@ class DbPdoMysql implements DatabaseDriver
     
     
     /**
-        * Il metodo permette di eseguire una query mediante un prepared statemnt.
-        * Il parametro $parameters contiene l'elenco dei dati da sostituire ai placeholder.
-        * Il parametro $mode permette di stabilire in che modo i dati vengono ritornati
-        * dal metodo, mediante 4 costanti predefinite dalla classe:
-        *
-        *   . DB::FETCH_ASSOC <ritorna i dati in un array associativo>
-        *   . DB::FETCH_NUM <ritorna i dati ordinati numericamente>
-        *   . DB::FETCH_BOTH <li ritorna sia associativi, sia con indicizzazione numerica>
-        *   . DB::FETCH_OBJ <ritorna i dati come oggetto>
-        *
-        * L'oggetto $result dispone inoltre delle seguenti proprietà:
-        *
-        *   . data <ritorna i dati recuperati dalla richiesta>
-        *   . num_rows <ritorna il numero di righe rintracciate dalla richiesta>
-        *   . insert_id <ritorna l'id di riga generato per l'ultima query di tipo insert>
-        *   . affected_rows <ritorna il numero di righe affette da un intervento di update/insert/delete>
-        *
-        * @param (string) $sql <La query SQL richiesta>
-        * @param (array) $parameters <Elenco di valori da sostituire ai placeholder nella query>
-        * @param (int) $mode <La modalità di ritorno dei dati>
-        *
-        * @throws DBException se il prepared statement fallisce
-        * @return object <Un oggetto che contiene i dati richiesti ed altre proprietà>
-    */
+     * Il metodo permette di eseguire una query mediante un prepared statemnt.
+     * Il parametro $parameters contiene l'elenco dei dati da sostituire ai placeholder.
+     * Il parametro $mode permette di stabilire in che modo i dati vengono ritornati
+     * dal metodo, mediante 4 costanti predefinite dalla classe:
+     *
+     *   . DB::FETCH_ASSOC <ritorna i dati in un array associativo>
+     *   . DB::FETCH_NUM <ritorna i dati ordinati numericamente>
+     *   . DB::FETCH_BOTH <li ritorna sia associativi, sia con indicizzazione numerica>
+     *   . DB::FETCH_OBJ <ritorna i dati come oggetto>
+     *
+     * L'oggetto $result dispone inoltre delle seguenti proprietà:
+     *
+     *   . data: ritorna i dati recuperati dalla richiesta
+     *   . num_rows: ritorna il numero di righe rintracciate dalla richiesta
+     *   . insert_id: ritorna l'id di riga generato per l'ultima query di tipo insert
+     *   . affected_rows: ritorna il numero di righe affette da un intervento di update/insert/delete
+     *
+     * @param (string) $sql: La query SQL richiesta
+     * @param (array) $parameters: Elenco di valori da sostituire ai placeholder nella query
+     * @param (int) $mode: La modalità di ritorno dei dati
+     *
+     * @throws DBException se il prepared statement fallisce
+     * @return (object) Un oggetto che contiene i dati richiesti ed altre proprietà
+     */
     public function stmtQuery($sql, $parameters = array(), $mode = self::FETCH_ASSOC)
     {
         $mode = $this->evaluateConstants($mode);
@@ -195,12 +195,12 @@ class DbPdoMysql implements DatabaseDriver
     
     
     /**
-        * Accetta in ingresso una costante definita nell'interfaccia DatabaseDriver e ritorna
-        * la costante associata equivalente per PDO.
-        *
-        * @param (int) $mode <La modalità di ritorno dei dati richiesta>
-        * @return int <La modalità di ritorno dei dati compatibile>
-    */
+     * Accetta in ingresso una costante definita nell'interfaccia DatabaseDriver e ritorna
+     * la costante associata equivalente per PDO.
+     *
+     * @param (int) $mode: La modalità di ritorno dei dati richiesta
+     * @return (int) La modalità di ritorno dei dati compatibile
+     */
     private function evaluateConstants($mode)
     {
         switch ($mode)
@@ -225,11 +225,11 @@ class DbPdoMysql implements DatabaseDriver
     
     
     /**
-        * Il distrutture della classe elimina l'istanza dell'oggetto di database 
-        * ed effettua la disconnessione.
-        * Nel caso di PDO la cancellazione dell'instanza chiude automaticamente 
-        * la connessione al database in uso.
-    */
+     * Il distrutture della classe elimina l'istanza dell'oggetto di database 
+     * ed effettua la disconnessione.
+     * Nel caso di PDO la cancellazione dell'instanza chiude automaticamente 
+     * la connessione al database in uso.
+     */
     public function __destruct()
     {
         unset($this->DBObj);
