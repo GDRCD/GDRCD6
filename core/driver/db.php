@@ -34,7 +34,14 @@ class DB
         $driver_file=dirname(__FILE__) . GDRCD_DS . 'driver.' . strtolower($driver) . '.php';
         if(file_exists($driver_file)) {
             require_once($driver_file);
-            self::$dbObj=new $driver($host,$user,$passwd,$dbName);
+            $class=new ReflectionClass($driver);
+            if($class->implementsInterface('DatabaseDriver')){
+                self::$dbObj=new $driver($host,$user,$passwd,$dbName);
+            }else{
+                throw new DBException("Il driver speficato non sembra essere il driver di un database!");   
+            }
+        }else{
+            throw new DBException("Il driver speficato non esiste");
         }
     }
     
