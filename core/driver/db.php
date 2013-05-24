@@ -7,6 +7,7 @@ require_once(dirname(__FILE__) . GDRCD_DS . 'db.exception.php');
  * Si occupa di scegliere il driver corretto del database e di inviargli le query da eseguire.
  * Questa è una classe completamente statica, utile semplicemente per la selezione del driver
  * e per poter accedere al database con un nome unico, non legato al nome del driver.
+ * 
  */
 class DB
 {
@@ -50,7 +51,7 @@ class DB
      */
     public function __callStatic($method, $params = null)
     {
-        if(method_exists(self::$dbObj, $method)){
+        if(!empty(self::$dbObj) and method_exists(self::$dbObj, $method)){
             return call_user_func_array(array(self::$dbObj,$method), $params);
         }else{
             throw new DBException("Il metodo ".$method." non esiste!");
