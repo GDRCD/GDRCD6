@@ -12,7 +12,7 @@
  * 
  * @package \GDRCD\core\driver
  */
-class DbPdoMysql implements DatabaseDriver
+class PdoMysql implements DatabaseDriver
 {
     private $DBObj;
     
