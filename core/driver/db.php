@@ -1,5 +1,6 @@
 <?php
 require_once(dirname(__FILE__) . GDRCD_DS . 'dbdriver.interface.php');
+require_once(dirname(__FILE__) . GDRCD_DS . 'dbresult.interface.php');
 require_once(dirname(dirname(__FILE__)) . GDRCD_DS . 'exceptions' . GDRCD_DS . 'db.exception.php');
 
 /**
