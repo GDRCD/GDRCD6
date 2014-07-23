@@ -103,6 +103,9 @@ class PdoMysql implements DatabaseDriver
         }
     }
 
+    public function escape($param){
+        return $this->DBObj->quote($param);
+    }
 
     /**
      * Il metodo permette di eseguire una query mediante un prepared statement.

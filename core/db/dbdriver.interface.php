@@ -32,6 +32,11 @@ interface DatabaseDriver
     public function query($sql, $one_shot=false, $mode=GDRCD_FETCH_ASSOC);
 
     /**
+     * Esegue l'escape di un generico parametro da inserire in una query SQL
+     */
+    public function escape($param);
+
+    /**
      * Ritorna l'ID creato dall'ultima query INSERT
      */
     public function getLastID();
