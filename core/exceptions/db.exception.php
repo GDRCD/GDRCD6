@@ -7,7 +7,7 @@ class DBException extends GDRCDException
 {
     private $query;
 
-    public function __construct($mess,$code,$internal,$query){
+    public function __construct($mess,$code,$internal,$query=''){
         parent::__construct($mess, $code,$internal);
         $this->query=$query;
     }
