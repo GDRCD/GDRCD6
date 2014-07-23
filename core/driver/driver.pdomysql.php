@@ -108,7 +108,8 @@ class PdoMysql implements DatabaseDriver
      * Il metodo permette di eseguire una query mediante un prepared statement.
      *
      * @param (string) $sql: La query SQL richiesta
-     * @param (array) $parameters: Elenco di valori da sostituire ai placeholder nella query
+     * @param (array) $parameters: Elenco di valori da sostituire ai placeholder nella query,
+     *                              placeholder nelle chiavi, valori nei valori
      * @param (bool) $one_shot: controlla cosa deve venire ritornato
      * @param (int) $mode: La modalità di ritorno dei dati. @see self::query
      *
@@ -117,17 +118,47 @@ class PdoMysql implements DatabaseDriver
      */
     public function stmtQuery($sql, $parameters = array(), $one_shot=false, $mode = GDRCD_FETCH_ASSOC)
     {
-        try {
+        $stmt = $this->prepare($sql);
+        foreach($parameters as $k=>$v){
+            $this->bind($stmt, $k, $v, '');
+        }
+        $this->exec($stmt);
+    }
 
-            $stmt = $this->DBObj->prepare($sql);
-            $stmt->execute($parameters);
+    public function prepare($sql){
+        try{
+            return new DBPDOStatement($this->DBObj->prepare($sql));
+        }
+        catch(PDOException $e){
+            throw new DBException("Errore preparazione dati del database",0,"Errore Prepare: ".$e->getMessage(),$sql);
+        }
+    }
+
+    /**
+     * PDO è più potente e non ha bisogno di indicazioni per filtrare i dati
+     */
+    public function bind($stmt, $placeholder, $data, $filter){
+        $real_stmt=$stmt->getStatement();
+        try{
+            $real_stmt->bindParam($placeholder,$data);
+        }
+        catch(PDOException $e){
+            throw new DBException("Errore impostazione parametri per il database",0,"Errore bind argomento Prepared Statement: ".$e->getMessage(),$real_stmt->queryString);
+        }
+    }
+
+    public function exec($stmt, $one_shot=false, $mode=GDRCD_FETCH_ASSOC){
+        $real_stmt=$stmt->getStatement();
+        $sql=$real_stmt->queryString;
+        try{
+            $real_stmt->execute();
 
             switch (trim(strtolower(substr($sql, 0, strpos($sql, ' '))))) {
                 case 'select':
                 case 'describe':
                 case 'explain':
                 case 'show':
-                    $res=new PDOResult($stmt);
+                    $res=new PDOResult($real_stmt);
                     if($one_shot){
                         return $res->fetch($mode);
                     }
@@ -139,21 +170,11 @@ class PdoMysql implements DatabaseDriver
                     return $stmt->rowCount();
                     break;
             }
-
         }
-        catch (PDOException $e) {
-            throw new DBException("Errore nell'interrogazione al database",0,$e->getMessage(),$sql);
+        catch(PDOException $e){
+            throw new DBException("Errore nell'interrogazione al database",0,"Errore Execute: ".$e->getMessage(),$sql);
         }
     }
-
-
-    public function prepare($sql){}
-
-
-    public function bind($placeholder, $data, $filter){}
-
-
-    public function exec($mode){}
 
     /**
      * @return l'ultimo ID inserito nel database da una query di INSERT
@@ -306,6 +327,15 @@ class PDOResult implements DbResult{
                 return PDO::FETCH_OBJ;
                 break;
         }
+    }
+}
+
+/**
+ * Rappresenta uno Statement PDO
+ */
+class DBPDOStatement extends DBStatement{
+    public function resetStatement(){
+        $this->statement->closeCursor();
     }
 }
 

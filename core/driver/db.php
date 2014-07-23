@@ -12,6 +12,14 @@ define('GDRCD_FETCH_BOTH',3);
 define('GDRCD_FETCH_OBJ',4);
 
 /**
+ * Tipo di formati per i parametri dei prepared statements
+ */
+define('GDRCD_FILTER_INT','i');
+define('GDRCD_FILTER_STRING','s');
+define('GDRCD_FILTER_FLOAT','d');
+define('GDRCD_FILTER_BINARY','b');
+
+/**
  * Rappresenta l'interfaccia principale per accedere layer di astrazione di GDRCD
  * Si occupa di scegliere il driver corretto del database e di inviargli le query da eseguire.
  * Questa è una classe completamente statica, utile semplicemente per la selezione del driver

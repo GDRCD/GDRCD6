@@ -32,27 +32,66 @@ interface DatabaseDriver
     public function query($sql, $one_shot=false, $mode=GDRCD_FETCH_ASSOC);
 
     /**
-     * Esegue la query come un prepared statement
-     * @param (string) $sql: la query da eseguire, adeguatamente parametrizzata
-     * @param (array) $parameters: i parametri da sostituire nella query
-     * @param (const) $mode: la modalità con cui eseguire la query @see self::query()
-     */
-    public function stmtQuery($sql, $parameters, $mode=GDRCD_FETCH_ASSOC);
-
-    /**
-     * Unknown
-     */
-    public function prepare($sql);
-    public function bind($placeholder, $data, $filter);
-    public function exec($mode);
-
-    /**
      * Ritorna l'ID creato dall'ultima query INSERT
      */
     public function getLastID();
 
     /**
-     * Transactional Statements
+     * Chiude la connessione al database
+     */
+    public function close();
+
+    /**
+     * Supporto ai Prepared Statement
+     */
+
+    /**
+     * Il metodo permette di eseguire una query mediante un prepared statement.
+     * è uno short cut di:
+     * self::prepare();
+     * self::bind();
+     * self::exec();
+     *
+     * @param (string) $sql: La query SQL richiesta
+     * @param (array) $parameters: Elenco di valori da sostituire ai placeholder nella query
+     * @param (bool) $one_shot: controlla cosa deve venire ritornato @@see self::query()
+     * @param (int) $mode: La modalità di ritorno dei dati. @see self::query()
+     *
+     * @throws DBException se il prepared statement fallisce
+     * @return @see self::query()
+     */
+    public function stmtQuery($sql, $parameters, $one_shot=false, $mode=GDRCD_FETCH_ASSOC);
+
+    /**
+     * Esegue il primo passo di preparazione di un Prepared Statement
+     * @param (string) $sql: la query da eseguire con gli adeguati place holder
+     * @return un oggetto DbStatement
+     */
+    public function prepare($sql);
+
+    /**
+     * Imposta un dato per eseguire un prepared statement
+     * @param (DBStatement) $stmt: un oggetto creato con self::prepare()
+     * @param (string)$placeholder: il placeholder per questo dato usato nella query
+     * @param (mixed)$data: il valore effettivo del dato
+     * @param (string)$filter: Indica la natura del dato sul database:
+     *                          GDRCD_FILTER_INT se è un numero intero
+     *                          GDRCD_FILTER_FLOAT se è un numero decimale
+     *                          GDRCD_FILTER_STRING se è testo o una data
+     *                          GDRCD_FILTER_BINARY se sono dati binari
+     */
+    public function bind($stmt, $placeholder, $data, $filter);
+
+    /**
+     * Esegue un Prepared Statement
+     * @param (DBStatement)$stmt: lo statement preparato da eseguire
+     * @param (bool)$one_shot: @see self::query()
+     * @param (int)$mode: @see self::query()
+     */
+    public function exec($stmt, $one_shot=false, $mode=GDRCD_FETCH_ASSOC);
+
+    /**
+     * Supporto alle Transazioni
      */
 
     /**
@@ -74,6 +113,4 @@ interface DatabaseDriver
      * @return true se c'è una transazione attiva
      */
     public function isTransactionActive();
-
-    public function close();
 }
