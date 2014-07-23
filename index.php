@@ -3,7 +3,7 @@
     * GDRCD Front Controller (index.php)
     * Il file si occupa di configurare le impostazioni iniziali, di caricare i path necessari
     * e di inizializzare il framework engine in base agli input utente.
-    * 
+    *
     * @package \GDRCD
 */
 
@@ -13,12 +13,6 @@
     * Specifica il nome dell'application di default (definito dal nome della cartella in uso)
 */
 define('GDRCD_APPLICATION_DEFAULT', 'GDR');
-
-/**
-    * Specifica quale componente caricare per permettere a GDRCD 
-    * di stabilire una connessione al database
-*/
-define('GDRCD_DATABASE_DRIVER', 'pdomysql');
 
 /**
     * Specifica il tipo di slash da usare per la composizione dei path del filesystem.

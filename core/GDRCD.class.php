@@ -1,11 +1,11 @@
 <?php
 /**
     * GDRCD Core Class
-    * Il cuore del framework del CMS, il suo compito è quello di rendere disponibili le classi del core e 
+    * Il cuore del framework del CMS, il suo compito è quello di rendere disponibili le classi del core e
     * i controller, ha inoltre il compito di tener traccia dei files inclusi e delle istanze avviate, cosicchè
     * l'intera applicazione possa accedere in un qualsiasi punto alla medesima istanza di un oggetto avviato
     * in una qualsiasi altra zona. Ciò permette interessanti sviluppi e un risparmio non indifferente di risorse.
-    * 
+    *
     * @package \GDRCD\core
 */
 class GDRCD
@@ -14,26 +14,31 @@ class GDRCD
         * Elenco dei files inclusi, la tracciabilità può risultare particolarmente utile per il debug
     */
     static public $includedFiles = array();
-    
+
     /**
         * Elenco delle istanze degli oggetti del core, riproponendo un istanza già avviata si risparmiano risorse
         * e permette inoltre di adoperare le stesse istanze di un oggetto in più punti del software
     */
     public $coreInstances = array();
-    
+
     /**
         * Elenco delle istanze del controller, riproponendo un istanza già avviata si risparmiano risorse
         * e permette inoltre di adoperare le stesse istanze di un oggetto in più punti del software
     */
     public $controllerInstances = array();
-    
+
     /**
         * Contiene il nome dell'application con cui è stata avviata l'istanza del core
         * è privata perchè è di sola lettura, per leggere questo valore fare riferimento a
         * GDRCD::currentApplication()
     */
     private $application;
-    
+
+    /**
+     * Contiene tutte le configurazioni impostate per l'applicazione corrente
+     */
+    private $appSettings;
+
     /**
         * Questa proprietà conterrà l'istanza già avviata della classe GDRCD, come per i controller
         * questo permetterà di accedere alla classe in un istruzione singleton usando la medesima istanza
@@ -52,18 +57,24 @@ class GDRCD
     {
         if (!in_array(dirname(__FILE__) . GDRCD_DS . 'GDRCD.class.php', self::$includedFiles))
                 self::$includedFiles[] = dirname(__FILE__) . GDRCD_DS . 'GDRCD.class.php';
-        
+
+        //Carica l'eccezione generica
+        self::load('exceptions' . GDRCD_DS . "GDRCD.exception.php");
+
         $this->loadCore('Controller');
         $this->autoloadRegister();
         $this->application = $application;
         self::$self =& $this;
+        $this->loadApplicationSettings();
+
+        $this->DBBootstrap();
     }
-    
-    
+
+
     /**
         * Fornisce l'istanza del $controller chiamato.
         * Se il controller non è mai stato richiamato prima, oppure se il parametro
-        * $forceNewInstance viene impostato su true, ritornerà una nuova istanza 
+        * $forceNewInstance viene impostato su true, ritornerà una nuova istanza
         * dell'oggetto, altrimenti ritorna la prima istanza archiviata.
         *
         * @param (string) $controller <Il nome del controller richiesto>
@@ -74,21 +85,21 @@ class GDRCD
     public function getControllerInstance($controller, $forceNewInstance = false)
     {
         if (!isset($this->controllerInstances[$controller])) {
-            
+
             $this->controllerInstances[$controller] = new $controller();
             return $this->controllerInstances[$controller];
-            
+
         } else {
-            
+
             return $forceNewInstance? new $controller() : $this->controllerInstances[$controller];
         }
     }
-    
-    
+
+
     /**
         * Fornisce l'istanza del $coreClass chiamato.
         * Se non è mai stato richiamato prima, oppure se il parametro
-        * $forceNewInstance viene impostato su true, ritornerà una nuova istanza 
+        * $forceNewInstance viene impostato su true, ritornerà una nuova istanza
         * dell'oggetto, altrimenti ritorna la prima istanza archiviata.
         *
         * @param (string) $coreClass <Il nome della classe core richiesta>
@@ -99,18 +110,18 @@ class GDRCD
     public function getCoreInstance($coreClass, $forceNewInstance = false)
     {
         $this->loadCore($coreClass);
-        
-        
+
+
         if (empty($this->coreInstances[$coreClass]) || $forceNewInstance) {
 
             $this->coreInstances[$coreClass] = new $coreClass();
-                     
+
         }
 
         return $this->coreInstances[$coreClass];
     }
-    
-    
+
+
     /**
         * Fornisce il nome dell'applicazione con cui è stata avviata l'istanza del core.
         *
@@ -120,72 +131,82 @@ class GDRCD
     {
         return $this->application;
     }
-    
-    
+
     /**
-        * Effettua la connessione e fornisce l'istanza dell'oggetto database.
-        * Una volta connessi è possibile richiedere l'istanza attiva senza dover spedire
-        * nuovamente i parametri richiesti per la connessione, è però possibile richiedere
-        * una nuova istanza adoperando il parametro $forceNewInstance
-        *
-        * @param (string) $host <L'host di connessione al database>
-        * @param (string) $user <Lo user di connessione>
-        * @param (string) $pass <La password di accesso>
-        * @param (string) $database <Il nome del database a cui si vuol accedere>
-        *
-        * @throws Exeption
-        * @return object <L'istanza dell'oggetto database>
-    */
-    public function DB($host = null, $user = null, $pass = null, $database = null, $forceNewInstance = false)
+     * Fornisce i dati di configurazione dell'applicazione corrente
+     * @param (string)$name: il nome della configurazione o del gruppo di configurazioni
+     *                          da caricare
+     * @return la configurazione o il gruppo di configurazioni da caricare.
+     *          Null se la configurazione richiesta non esiste
+     */
+    public function getApplicationSetting($name){
+        if(isset($this->appSettings[$name])){
+            return $this->appSettings[$name];
+        }
+        return null;
+    }
+
+    /**
+     * Carica le configurazioni dell'applicazione corrente
+     */
+    private function loadApplicationSettings(){
+        $settings=dirname(__FILE__) . GDRCD_DS .
+                'application' . GDRCD_DS .
+                $this->currentApplication() . GDRCD_DS .
+                'application.inc.php';
+        if(file_exists($settings) and is_readable($settings)){
+
+        }
+        else{
+            throw new GDRCDException("Impossibile Avviare l'applicazione",
+                                    0,
+                                    "File di configurazione dell'applicazione ".
+                                        $this->currentApplication()." non trovato",
+                                    GDRCD_FATAL);
+        }
+    }
+
+    /**
+     * Inizializza il database con i parametri forniti
+     */
+    private function DBBootstrap()
     {
-        #> tutto quel che segue è perché, ahimè non si può fare empty(CONSTANT) in php
-        #> se qualcuno conosce un metodo migliore di effettuare un check analogo
-        #> si senta libero di migliorarlo
-        if (
-            !defined('GDRCD_DATABASE_DRIVER') || 
-            trim(GDRCD_DATABASE_DRIVER) != '' || 
-            !is_null(GDRCD_DATABASE_DRIVER)
-            )
-                throw new Exception('No database driver is defined, check your configuration.');
-        
-        
-        $driverPath = 
+        self::load("db/db.php");
+
+        $set=$this->getApplicationSetting('db');
+        DB::connect($set['driver'], $set['host'], $set['user'], $set['password'], $set['database'], $set['additional']);
+        $this->coreInstances['DB']=DB;//TODO incompatibile con getCoreInstance()
+    }
+
+    /**
+     * Generico caricatore di file e classi nel sistema.
+     * Metodo alternativo a require_once e include_once
+     * @param (string) $path: il percorso del file da includere
+     * @param (string) $err: Un eventuale stringa di errore da inviare
+     *                       in caso che il caricamento fallisca
+     * @throws GDRCDEXception in caso di fallimento
+     */
+    public static function load($path,$err=''){
+        $className =
             dirname(__FILE__)
             . GDRCD_DS
-            . 'driver'
-            . GDRCD_DS
-            . 'driver.' . GDRCD_DATABASE_DRIVER . '.php';
+            . $path;
 
-        if (!in_array($driverPath, self::$includedFiles)) {
-            
-            if (is_readable($driverPath)) {
-                self::$includedFiles[] = $driverPath;
-                require $driverPath;
-                
+        if(empty($err)){
+            $err="Il file '".$className."' non esiste o non è accessibile.";
+        }
+
+        if (!in_array($className, self::$includedFiles)) {
+            if (is_file($className) and is_readable($className)) {
+                self::$includedFiles[] = $className;
+                require $className;
+
             } else {
-                throw new Exception("Core file doesn't exists or it is unaccessible in '$driverPath'");
+                throw new GDRCDException("Errore nell'inclusione di un file",0,$err,GDRCD_FATAL);
             }
         }
-        
-        
-        if (empty($this->coreInstances['DB']) || $forceNewInstance) {
-        
-            if (
-                empty($host) ||
-                empty($user) || 
-                empty($pass) || 
-                empty($database)
-                )
-                    throw new Exception('Unable to contact target database. Check your connection parameters.');
-  
-
-            $this->coreInstances['DB'] = new DB($host, $user, $pass, $database);
-        }
-        
-        return $this->coreInstances['DB'];
     }
-    
-    
+
     /**
         * Verifica se la classe di core esiste nel percorso richiesto, se è
         * accessibile e in caso lo include, aggiornando l'elenco dei file inclusi.
@@ -198,25 +219,10 @@ class GDRCD
     */
     private function loadCore($className)
     {
-        $className = 
-            dirname(__FILE__)
-            . GDRCD_DS
-            . $className
-            . '.class.php';
-        
-        if (!in_array($className, self::$includedFiles)) {
-            
-            if (is_readable($className)) {
-                self::$includedFiles[] = $className;
-                require $className;
-                
-            } else {
-                throw new Exception("Core file doesn't exists or it is unaccessible in '$className'");
-            }
-        }
+        self::load($className.'.class.php','Il Core file '.$className." non esiste o non è accessibile");
     }
-    
-    
+
+
     /**
         * Verifica se il controller esiste nel percorso richiesto, se è
         * accessibile e in caso lo include, aggiornando l'elenco dei file inclusi.
@@ -229,31 +235,16 @@ class GDRCD
     */
     private function loadController($className)
     {
-        $className = 
-            dirname(dirname(__FILE__))
-            . GDRCD_DS
-            . 'application'
+        self::load('application'
             . GDRCD_DS
             . $this->currentApplication()
             . GDRCD_DS
             . 'controller'
             . GDRCD_DS
             . $className
-            . '.class.php';
-
-        if (!in_array($className, self::$includedFiles)) {
-            
-            if (is_readable($className)) {
-                self::$includedFiles[] = $className;
-                require $className;
-                
-            } else {
-                throw new Exception(
-                    "[Application: " 
-                    . $this->currentApplication() 
-                    . "] Controller file doesn't exists or it is unaccessible in '$className'");
-            }
-        }
+            . '.class.php',"[Applicazione: "
+                    . $this->currentApplication()
+                    . "] Il file Controller '$className' non esiste o non è accessibile");
     }
 
 
@@ -262,8 +253,9 @@ class GDRCD
     */
     private function autoloadRegister()
     {
-        spl_autoload_register(array($this, 'loadController'));	
-    } 
+        spl_autoload_register(array($this, 'loadController'));
+        spl_autoload_register(array('DB','loadDriver'));
+    }
 
 
     /**
@@ -271,9 +263,10 @@ class GDRCD
     */
     private function autoloadUnregister()
     {
-        spl_autoload_unregister(array($this, 'loadController'));	
+        spl_autoload_unregister(array($this, 'loadController'));
+        spl_autoload_unregister(array('DB','loadDriver'));
     }
-    
+
 
     /**
         * Deinizializza le risorse impiegate per l'avvio del core e distrugge l'istanza corrente

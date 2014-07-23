@@ -1,7 +1,7 @@
 <?php
-require_once(dirname(__FILE__) . GDRCD_DS . 'dbdriver.interface.php');
-require_once(dirname(__FILE__) . GDRCD_DS . 'dbresult.interface.php');
-require_once(dirname(dirname(__FILE__)) . GDRCD_DS . 'exceptions' . GDRCD_DS . 'db.exception.php');
+GDRCD::load('db' . GDRCD_DS . 'dbdriver.interface.php');
+GDRCD::load('db' . GDRCD_DS . 'dbresult.interface.php');
+GDRCD::load('exceptions' . GDRCD_DS . 'db.exception.php');
 
 /**
  * Tipi di formati per i risultati ricevibili dal database
@@ -73,7 +73,7 @@ class DB
         }
     }
 
-    private static function loadDriver($driver){
+    public static function loadDriver($driver){
         $driver_file=dirname(__FILE__) . GDRCD_DS . 'driver.' . strtolower($driver) . '.php';
         if (file_exists($driver_file)) {
             require_once($driver_file);
