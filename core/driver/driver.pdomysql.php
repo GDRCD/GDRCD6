@@ -3,197 +3,282 @@
  * PDO Mysql Driver
  * La classe in questione adopera PDO per dialogare con un database mysql.
  * Lo scopo non è implementare PDO e quindi rendere usabili i metodi dello stesso mediante un extends
- * ma piuttosto fornire un interfaccia per l'utilizzo di PDO (non è un controsenso se si pensa che ha 
+ * ma piuttosto fornire un interfaccia per l'utilizzo di PDO (non è un controsenso se si pensa che ha
  * i suoi limiti e qualcuno potrebbe dover necessitare di altro), così che solo i metodi di questa classe
  * saranno utilizzati e gli stessi standardizzeranno il modo con cui vengono eseguite le query nel CMS.
- * Tutto questo, permetterà di adoperare i più svariati driver (odbc, mysqli, sqlserver) senza dover 
+ * Tutto questo, permetterà di adoperare i più svariati driver (odbc, mysqli, sqlserver) senza dover
  * riscrivere altro in tutto l'engine (per maggiori info, googlate "abstraction layer").
  * IMPORTANTE: per il presente driver è richiesto che nel php.ini sia abilitata l'estensione php_pdo_mysql.dll
- * 
+ *
  * @package \GDRCD\core\driver
  */
 class PdoMysql implements DatabaseDriver
 {
     private $DBObj;
-    
-    
+    private $activeTransaction=false;
+
     /**
      * Il metodo inizializza la connessione al database
      *
-     * @param (string) $host L'host di connessione al database
-     * @param (string) $user Lo user di connessione
-     * @param (string) $pass La password di accesso
-     * @param (string) $database Il nome del database a cui si vuol accedere
+     * @param (string) $host: L'host di connessione al database
+     * @param (string) $user: Lo user di connessione
+     * @param (string) $pass: La password di accesso
+     * @param (string) $database: Il nome del database a cui si vuol accedere
+     * @param (array)  $additional: un array di parametri addizionali da passare
+     *                              direttamente al driver PDO
      *
      * @throws DBException se la connessione fallisce
      */
-    public function __construct($host, $user, $pass, $database)
+    public function __construct($host, $user, $pass, $database,$additional=array())
     {
         try {
-            
+
+            $additional=array_merge($additional,array(
+                PDO::ATTR_EMULATE_PREPARES => false,
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true//Don't know if it works here. If not we should move it to statement attributes
+            ));
+
             $this->DBObj = new PDO(
-                "mysql:host={$host};dbname={$database};charset=utf8", 
-                $user, 
+                "mysql:host={$host};dbname={$database};charset=utf8",
+                $user,
                 $pass,
-                array(
-                    PDO::ATTR_EMULATE_PREPARES => false,
-                    PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-                )
+                $additional
             );
-        
-        } catch (PDOException $e) {
-        
+
+        }
+        catch (PDOException $e){
             throw new DBException($e->getMessage());
-            
         }
     }
-    
-    
+
+
     /**
      * Permette di spedire una qualsiasi query al database e ne ritorna i dati.
-     * Il parametro $mode permette di stabilire in che modo i dati vengono ritornati
-     * dal metodo, mediante 4 costanti predefinite dalla classe:
      *
-     *   . DB::FETCH_ASSOC <ritorna i dati in un array associativo>
-     *   . DB::FETCH_NUM <ritorna i dati ordinati numericamente>
-     *   . DB::FETCH_BOTH <li ritorna sia associativi, sia con indicizzazione numerica>
-     *   . DB::FETCH_OBJ <ritorna i dati come oggetto>
-     *
-     * L'oggetto $result dispone inoltre delle seguenti proprietà:
-     *
-     *   . data <ritorna i dati recuperati dalla richiesta>
-     *   . num_rows <ritorna il numero di righe rintracciate dalla richiesta>
-     *   . insert_id <ritorna l'id di riga generato per l'ultima query di tipo insert>
-     *   . affected_rows <ritorna il numero di righe affette da un intervento di update/insert/delete>
-     *
-     * @param (string) $sql La query SQL richiesta
-     * @param (int) $mode La modalità di ritorno dei dati
+     * @param (string) $sql: La query SQL richiesta
+     * @param (bool) $one_shot: controlla cosa deve venire ritornato
+     * @param (int) $mode: Valido solo se $one_shot=true
+     *                     Il parametro $mode permette di stabilire in che modo i dati vengono ritornati
+     *                     dal metodo, mediante 4 costanti predefinite:
+     *                     . GDRCD_FETCH_ASSOC: ritorna i dati in un array associativo
+     *                     . GDRCD_FETCH_NUM: ritorna i dati ordinati numericamente
+     *                     . GDRCD_FETCH_BOTH: li ritorna sia associativi, sia con indicizzazione numerica
+     *                     . GDRCD_FETCH_OBJ: ritorna i dati come oggetto
      *
      * @throws DBException se la query fallisce
-     * @return object Un oggetto che contiene i dati richiesti ed altre proprietà
+     * @return (object|array) se $one_shot==true viene ritornato direttamente il
+     *                      primo record del resultset nel formato specificato
+     *                      da $mode. Altrimenti viene ritornato un oggetto DBResult
+     *                      Se la query non è di select, viene ritornato il numero
+     *                      di record coinvolti nella query eseguita.
 	 */
-    public function query($sql, $mode = self::FETCH_ASSOC)
+    public function query($sql, $one_shot=false, $mode = GDRCD_FETCH_ASSOC)
     {
-        $mode = $this->evaluateConstants($mode);
-    
-        $result = new stdClass;
-        $result->data = null;
-        $result->num_rows = null;
-        $result->insert_id = null;
-        $result->affected_rows = null;
-        
         try {
-            
-            switch (trim(strtolower(substr($sql, 0, 6))))
-            {
+            switch (strtolower(substr($sql, 0, strpos($sql,' ')))) {
                 case 'select':
+                case 'describe':
+                case 'explain':
+                case 'show':
                     $stmt = $this->DBObj->query($sql);
-                    $data = $stmt->fetchAll($mode);
-                    
-                    $result->data = $data;
-                    #$result->data = !isset($data[1])? array_shift($data) : $data;
-                    $result->num_rows = $stmt->rowCount();
+                    $res=new PDOResult($stmt);
+
+                    if ($one_shot) {
+                        return $res->fetch($mode);
+                    }
+                    else {
+                        return $res;
+                    }
                     break;
-                
-                case 'insert':
-                    $result->affected_rows = $this->DBObj->exec($sql);
-                    $result->insert_id = $this->DBObj->lastInsertId();
-                    break;
-                
-                default:
-                    $result->affected_rows = $this->DBObj->exec($sql);
+
+                default://Simply execute and return affected rows number
+                    return $this->DBObj->exec($sql);
                     break;
             }
-            
-        } catch (PDOException $e) {
-   
-            throw new DBException($e->getMessage());
-                
+
         }
-        
-        return $result;
+        catch (PDOException $e) {
+            throw new DBException("Errore nell'interrogazione al database.",0,$e->getMessage(),$sql);
+        }
     }
-    
-    
+
+
     /**
-     * Il metodo permette di eseguire una query mediante un prepared statemnt.
-     * Il parametro $parameters contiene l'elenco dei dati da sostituire ai placeholder.
-     * Il parametro $mode permette di stabilire in che modo i dati vengono ritornati
-     * dal metodo, mediante 4 costanti predefinite dalla classe:
-     *
-     *   . DB::FETCH_ASSOC <ritorna i dati in un array associativo>
-     *   . DB::FETCH_NUM <ritorna i dati ordinati numericamente>
-     *   . DB::FETCH_BOTH <li ritorna sia associativi, sia con indicizzazione numerica>
-     *   . DB::FETCH_OBJ <ritorna i dati come oggetto>
-     *
-     * L'oggetto $result dispone inoltre delle seguenti proprietà:
-     *
-     *   . data: ritorna i dati recuperati dalla richiesta
-     *   . num_rows: ritorna il numero di righe rintracciate dalla richiesta
-     *   . insert_id: ritorna l'id di riga generato per l'ultima query di tipo insert
-     *   . affected_rows: ritorna il numero di righe affette da un intervento di update/insert/delete
+     * Il metodo permette di eseguire una query mediante un prepared statement.
      *
      * @param (string) $sql: La query SQL richiesta
      * @param (array) $parameters: Elenco di valori da sostituire ai placeholder nella query
-     * @param (int) $mode: La modalità di ritorno dei dati
+     * @param (bool) $one_shot: controlla cosa deve venire ritornato
+     * @param (int) $mode: La modalità di ritorno dei dati. @see self::query
      *
      * @throws DBException se il prepared statement fallisce
-     * @return (object) Un oggetto che contiene i dati richiesti ed altre proprietà
+     * @return @see self::query()
      */
-    public function stmtQuery($sql, $parameters = array(), $mode = self::FETCH_ASSOC)
+    public function stmtQuery($sql, $parameters = array(), $one_shot=false, $mode = GDRCD_FETCH_ASSOC)
     {
-        $mode = $this->evaluateConstants($mode);
-        
-        $result = new stdClass;
-        $result->data = null;
-        $result->num_rows = null;
-        $result->insert_id = null;
-        $result->affected_rows = null;
-        
         try {
-        
+
             $stmt = $this->DBObj->prepare($sql);
             $stmt->execute($parameters);
-            
-            switch (trim(strtolower(substr($sql, 0, 6))))
-            {
+
+            switch (trim(strtolower(substr($sql, 0, strpos($sql, ' '))))) {
                 case 'select':
-                    $data = $stmt->fetchAll($mode);
-                    
-                    $result->data = $data;
-                    #$result->data = !isset($data[1])? array_shift($data) : $data;
-                    $result->num_rows = $stmt->rowCount();
+                case 'describe':
+                case 'explain':
+                case 'show':
+                    $res=new PDOResult($stmt);
+                    if($one_shot){
+                        return $res->fetch($mode);
+                    }
+                    else{
+                        return $res;
+                    }
                     break;
-                
-                case 'insert':
-                    $result->affected_rows = $stmt->rowCount();
-                    $result->insert_id = $this->DBObj->lastInsertId();
-                    break;
-                
                 default:
-                    $result->affected_rows = $stmt->rowCount();
+                    return $stmt->rowCount();
                     break;
             }
-            
-        } catch (PDOException $e) {
-   
-            throw new DBException($e->getMessage());
-            
+
         }
-        
-        return $result;
+        catch (PDOException $e) {
+            throw new DBException("Errore nell'interrogazione al database",0,$e->getMessage(),$sql);
+        }
     }
-    
-    
+
+
     public function prepare($sql){}
-    
-    
+
+
     public function bind($placeholder, $data, $filter){}
-    
-    
+
+
     public function exec($mode){}
-    
-    
+
+    /**
+     * @return l'ultimo ID inserito nel database da una query di INSERT
+     */
+    public function getLastID(){
+        return $this->DBObj->lastInsertId();
+    }
+
+    public function startTransaction(){
+        $this->DBObj->beginTransaction();
+        $this->activeTransaction=true;
+    }
+
+    /**
+     * Committa una Transazione con successo
+     */
+    public function commitTransaction(){
+        $this->DBObj->commit();
+        $this->activeTransaction=false;
+    }
+
+    /**
+     * Annulla tutte le azioni fatte durante la transazione attuale, terminandola
+     */
+    public function rollbackTransaction(){
+        $this->DBObj->rollBack();
+        $this->activeTransaction=false;
+    }
+
+    /**
+     * @return true se c'è una transazione attiva
+     */
+    public function isTransactionActive(){
+        if(method_exists($this->DBObj, 'inTransaction')){
+            return $this->DBObj->inTransaction();
+        }
+        else{
+            return $this->activeTransaction;
+        }
+    }
+
+    /**
+     * Il distrutture della classe elimina l'istanza dell'oggetto di database
+     * ed effettua la disconnessione.
+     * Nel caso di PDO la cancellazione dell'instanza chiude automaticamente
+     * la connessione al database in uso.
+     */
+    public function close()
+    {
+        unset($this->DBObj);
+    }
+
+    /**
+     * Let's close the connection if the object gets destroyed
+     */
+    public function __destruct(){
+        $this->close();
+    }
+}
+
+/**
+ * Rappresenza un risultato proveniente dal DB.
+ * Può essere usato sia per risultati che contengono dati, sia per semplici
+ * query che hanno solo il numero di record coinvolti
+ */
+class PDOResult implements DbResult{
+    private $PDOstmt;
+
+    public function __construct(PDOStatement $stmt){
+        if(!empty($stmt) and $stmt instanceof PDOStatement){
+            $this->PDOstmt=$stmt;
+        }
+        else{
+            throw new DBException("Errore di costruzione dei risultati del database",0,"Il parametro passato a PDOResult non è un PDOStatement");
+        }
+    }
+
+    public function fetch($mode=GDRCD_FETCH_ASSOC){
+        $val=$this->PDOstmt->fetch($this->evaluateConstants($mode));
+
+        if($val!==false){
+            return $val;
+        }
+        else{
+            throw new DBException("Non ci sono dati da riornare", 0, "Chiamata a metodo fetch su un risultato senza resultset",$this->PDOstmt->queryString);
+        }
+    }
+
+    public function fetchAll($mode=GDRCD_FETCH_ASSOC){
+        $val=$this->PDOstmt->fetchAll($this->evaluateConstants($mode));
+
+        if($val!==false){
+            return $val;
+        }
+        else{
+            throw new DBException("Non ci sono dati da riornare", 0, "Chiamata a metodo fetchAll su un risultato senza resultset",$this->PDOstmt->queryString);
+        }
+    }
+
+    public function numRows(){
+        $chunks=explode(' ', $this->PDOstmt->queryString);
+        if($chunks[0]=='select'){
+            /**
+             * Sfortunatamente PDO non ha un metodo che ritorni effettivamente
+             * il numero di righe nel recordset. Ce lo dobbiamo calcolare.
+             */
+
+            /**
+             * Costruisco una nuova query di conteggio dalla vecchia query.
+             * Sperando di non incappare in casi particolari
+             */
+            $new_query="SELECT count(*) AS N ".substr($this->PDOstmt->queryString,
+                        strpos($this->PDOstmt->queryString, 'FROM'));
+            $count=DB::query($new_query,true);
+            return (int)$count['N'];
+        }
+        else{
+            return $this->PDOstmt->rowCount();
+        }
+    }
+
+    public function free(){
+        $this->PDOstmt->closeCursor();
+    }
+
     /**
      * Accetta in ingresso una costante definita nell'interfaccia DatabaseDriver e ritorna
      * la costante associata equivalente per PDO.
@@ -208,47 +293,34 @@ class PdoMysql implements DatabaseDriver
             case self::FETCH_ASSOC:
                 return PDO::FETCH_ASSOC;
                 break;
-                
+
             case self::FETCH_NUM:
                 return PDO::FETCH_NUM;
                 break;
-                
+
             case self::FETCH_BOTH:
                 return PDO::FETCH_BOTH;
                 break;
-                
+
             case self::FETCH_OBJ:
                 return PDO::FETCH_OBJ;
                 break;
         }
     }
-    
-    
-    /**
-     * Il distrutture della classe elimina l'istanza dell'oggetto di database 
-     * ed effettua la disconnessione.
-     * Nel caso di PDO la cancellazione dell'instanza chiude automaticamente 
-     * la connessione al database in uso.
-     */
-    public function __destruct()
-    {
-        unset($this->DBObj);
-    }
 }
 
-
 /*
-# Premessa: ogni istruzione può essere gestita col paradigma try/catch 
-# richiamando la classe Exception, come nell'esempio che segue:
+# Premessa: ogni istruzione può essere gestita col paradigma try/catch
+# richiamando la classe DBException, come nell'esempio che segue:
 
 try {
 
     $db->query("Wrong SQL Syntax!");
 
-} catch (Exception $e)
+} catch (DBException $e)
 {
     $errorMessage = $e->getMessage();
-    
+
     // altre eventuali gestioni dell'errore
 }
 
@@ -261,39 +333,17 @@ $DB = new DB('host', 'user', 'password', 'database');
 #> Esempio di una query standard
 $someResult = $DB->query("SELECT * FROM log WHERE nome_interessato LIKE 'Sup%'");
 
-#> Ciò che viene immagazzinato in $someResult
-#> Da notare che in caso di più record verrà riempito l'array primario in data
-stdClass Object
-(
-    [data] => Array
-        (
-            [0] => Array
-                (
-                    [id] => 1
-                    [nome_interessato] => Super
-                    [autore] => ::1
-                    [data_evento] => 2013-05-09 02:18:05
-                    [codice_evento] => 2
-                    [descrizione_evento] => ::1
-                )
-         )
-         
-    [num_rows] => 1
-    [insert_id] => 
-    [affected_rows] => 
-)
-
 
 #> Stessa query di prima, ma con i prepared statement (il responso sarà identico)
 $someResult = $DB->stmtQuery(
-    "SELECT * FROM log WHERE nome_interessato LIKE ?", 
+    "SELECT * FROM log WHERE nome_interessato LIKE ?",
     array('Sup%')
 );
 
 
 #> Query di insert con statement contenente più parametri
 $insertResult = $DB->stmtQuery(
-    "INSERT INTO log (nome_interessato, autore, data_evento, codice_evento, descrizione_evento) 
+    "INSERT INTO log (nome_interessato, autore, data_evento, codice_evento, descrizione_evento)
     VALUES (?, ?, NOW(), ?, ?)",
     array('Super', '::1', 2, '::1')
 );
@@ -301,8 +351,8 @@ $insertResult = $DB->stmtQuery(
 #> $insertResult tornerà così:
 stdClass Object
 (
-    [data] => 
-    [num_rows] => 
+    [data] =>
+    [num_rows] =>
     [insert_id] => 2
     [affected_rows] => 1
 )
@@ -317,9 +367,9 @@ $insertResult = $DB->stmtQuery(
 #> In $insertResult ci sarà, come al solito
 stdClass Object
 (
-    [data] => 
-    [num_rows] => 
-    [insert_id] => 
+    [data] =>
+    [num_rows] =>
+    [insert_id] =>
     [affected_rows] => 1
 )
 
