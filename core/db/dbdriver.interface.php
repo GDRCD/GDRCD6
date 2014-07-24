@@ -59,7 +59,10 @@ interface DatabaseDriver
      *
      * @param (string) $sql: La query SQL richiesta
      * @param (array) $parameters: Elenco di valori da sostituire ai placeholder nella query
-     * @param (bool) $one_shot: controlla cosa deve venire ritornato @@see self::query()
+     *                             Ogni elemento dell'array è a sua volta un array che contiene
+     *                             le chiavi: 'placeholder', 'data', 'type'
+     *                             per i dettagli sulle loro nature @see self::bind()
+     * @param (bool) $one_shot: controlla cosa deve venire ritornato @see self::query()
      * @param (int) $mode: La modalità di ritorno dei dati. @see self::query()
      *
      * @throws DBException se il prepared statement fallisce
@@ -69,7 +72,9 @@ interface DatabaseDriver
 
     /**
      * Esegue il primo passo di preparazione di un Prepared Statement
-     * @param (string) $sql: la query da eseguire con gli adeguati place holder
+     * @param (string) $sql: la query da eseguire con gli adeguati placeholder
+     *                       Sono supportati placeholder indicati con ? o
+     *                       placeholder nominati secondo la sintassi ':nome'
      * @return un oggetto DbStatement
      */
     public function prepare($sql);
@@ -78,14 +83,20 @@ interface DatabaseDriver
      * Imposta un dato per eseguire un prepared statement
      * @param (DBStatement) $stmt: un oggetto creato con self::prepare()
      * @param (string)$placeholder: il placeholder per questo dato usato nella query
+     *                              Per placeholder nominati deve corrispondere al
+     *                              nome del placeholder preceduto da ':'
+     *                              Per i placeholder con ? deve essere l'indice
+     *                              numerico corrispondente alla posizione del
+     *                              parametro nella query, iniziando il conteggio
+     *                              da 1
      * @param (mixed)$data: il valore effettivo del dato
-     * @param (string)$filter: Indica la natura del dato sul database:
+     * @param (string)$type Indica la natura del dato sul database:
      *                          GDRCD_FILTER_INT se è un numero intero
      *                          GDRCD_FILTER_FLOAT se è un numero decimale
      *                          GDRCD_FILTER_STRING se è testo o una data
      *                          GDRCD_FILTER_BINARY se sono dati binari
      */
-    public function bind($stmt, $placeholder, $data, $filter);
+    public function bind($stmt, $placeholder, $data, $type);
 
     /**
      * Esegue un Prepared Statement
