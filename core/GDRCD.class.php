@@ -67,7 +67,10 @@ class GDRCD
         self::$self =& $this;
         $this->loadApplicationSettings();
 
-        $this->DBBootstrap();
+        $dbSett=$this->getApplicationSetting('db');
+        if(!empty($dbSett)){//Initialize the DB only if it is configured
+            $this->DBBootstrap();
+        }
     }
 
 
@@ -155,7 +158,10 @@ class GDRCD
                 $this->currentApplication() . GDRCD_DS .
                 'application.inc.php';
         if(file_exists($settings) and is_readable($settings)){
-
+            require_once($settings);
+            if(isset($APPLICATION)){
+                $this->appSettings=$APPLICATION;
+            }
         }
         else{
             throw new GDRCDException("Impossibile Avviare l'applicazione",
