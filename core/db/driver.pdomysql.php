@@ -122,8 +122,8 @@ class PdoMysql implements DatabaseDriver
     public function stmtQuery($sql, $parameters = array(), $one_shot=false, $mode = GDRCD_FETCH_ASSOC)
     {
         $stmt = $this->prepare($sql);
-        foreach($parameters as $v){
-            $this->bind($stmt, $v['placeholder'], $v['data'], '');
+        foreach($parameters as $pl=>$v){
+            $this->bind($stmt, $pl, $v['data'], '');
         }
         $this->exec($stmt);
     }

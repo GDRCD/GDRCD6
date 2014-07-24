@@ -59,8 +59,9 @@ interface DatabaseDriver
      *
      * @param (string) $sql: La query SQL richiesta
      * @param (array) $parameters: Elenco di valori da sostituire ai placeholder nella query
-     *                             Ogni elemento dell'array è a sua volta un array che contiene
-     *                             le chiavi: 'placeholder', 'data', 'type'
+     *                             Ogni elemento dell'array è a sua volta un array la cui chiave
+     *                             è il placeholder corrispondente e contiene le chiavi:
+     *                             'data' e 'type'
      *                             per i dettagli sulle loro nature @see self::bind()
      * @param (bool) $one_shot: controlla cosa deve venire ritornato @see self::query()
      * @param (int) $mode: La modalità di ritorno dei dati. @see self::query()
