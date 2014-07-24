@@ -25,7 +25,6 @@ class PdoMysql implements DatabaseDriver
     public function __construct($host, $user, $pass, $database,$additional=array())
     {
         try {
-
             $additional=array_merge($additional,array(
                 PDO::ATTR_EMULATE_PREPARES => false,
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -38,7 +37,6 @@ class PdoMysql implements DatabaseDriver
                 $pass,
                 $additional
             );
-
         }
         catch (PDOException $e){
             throw new DBException($e->getMessage());
@@ -96,7 +94,8 @@ class PdoMysql implements DatabaseDriver
         }
     }
 
-    public function escape($param){
+    public function escape($param)
+    {
         return $this->DBObj->quote($param);
     }
 
@@ -121,7 +120,8 @@ class PdoMysql implements DatabaseDriver
         $this->exec($stmt);
     }
 
-    public function prepare($sql){
+    public function prepare($sql)
+    {
         try{
             return new DBPDOStatement($this->DBObj->prepare($sql));
         }
@@ -133,7 +133,8 @@ class PdoMysql implements DatabaseDriver
     /**
      * PDO è più potente e non ha bisogno di indicazioni per filtrare i dati
      */
-    public function bind($stmt, $placeholder, $data, $filter){
+    public function bind($stmt, $placeholder, $data, $filter)
+    {
         $real_stmt=$stmt->getStatement();
         try{
             $real_stmt->bindParam($placeholder,$data);
@@ -143,7 +144,8 @@ class PdoMysql implements DatabaseDriver
         }
     }
 
-    public function exec($stmt, $one_shot=false, $mode=GDRCD_FETCH_ASSOC){
+    public function exec($stmt, $one_shot=false, $mode=GDRCD_FETCH_ASSOC)
+    {
         $real_stmt=$stmt->getStatement();
         $sql=$real_stmt->queryString;
         try{
@@ -167,7 +169,7 @@ class PdoMysql implements DatabaseDriver
                     break;
             }
         }
-        catch(PDOException $e){
+        catch(PDOException $e) {
             throw new DBException("Errore nell'interrogazione al database",0,"Errore Execute: ".$e->getMessage(),$sql);
         }
     }
@@ -175,11 +177,13 @@ class PdoMysql implements DatabaseDriver
     /**
      * @return l'ultimo ID inserito nel database da una query di INSERT
      */
-    public function getLastID(){
+    public function getLastID()
+    {
         return $this->DBObj->lastInsertId();
     }
 
-    public function startTransaction(){
+    public function startTransaction()
+    {
         $this->DBObj->beginTransaction();
         $this->activeTransaction=true;
     }
@@ -187,7 +191,8 @@ class PdoMysql implements DatabaseDriver
     /**
      * Committa una Transazione con successo
      */
-    public function commitTransaction(){
+    public function commitTransaction()
+    {
         $this->DBObj->commit();
         $this->activeTransaction=false;
     }
@@ -195,7 +200,8 @@ class PdoMysql implements DatabaseDriver
     /**
      * Annulla tutte le azioni fatte durante la transazione attuale, terminandola
      */
-    public function rollbackTransaction(){
+    public function rollbackTransaction()
+    {
         $this->DBObj->rollBack();
         $this->activeTransaction=false;
     }
@@ -203,11 +209,12 @@ class PdoMysql implements DatabaseDriver
     /**
      * @return true se c'è una transazione attiva
      */
-    public function isTransactionActive(){
-        if(method_exists($this->DBObj, 'inTransaction')){
+    public function isTransactionActive()
+    {
+        if (method_exists($this->DBObj, 'inTransaction')) {
             return $this->DBObj->inTransaction();
         }
-        else{
+        else {
             return $this->activeTransaction;
         }
     }
@@ -226,7 +233,8 @@ class PdoMysql implements DatabaseDriver
     /**
      * Let's close the connection if the object gets destroyed
      */
-    public function __destruct(){
+    public function __destruct()
+    {
         $this->close();
     }
 }
@@ -236,43 +244,48 @@ class PdoMysql implements DatabaseDriver
  * Può essere usato sia per risultati che contengono dati, sia per semplici
  * query che hanno solo il numero di record coinvolti
  */
-class PDOResult implements DbResult{
+class PDOResult implements DbResult
+{
     private $PDOstmt;
 
-    public function __construct(PDOStatement $stmt){
-        if(!empty($stmt) and $stmt instanceof PDOStatement){
+    public function __construct(PDOStatement $stmt)
+    {
+        if (!empty($stmt) and $stmt instanceof PDOStatement) {
             $this->PDOstmt=$stmt;
         }
-        else{
+        else {
             throw new DBException("Errore di costruzione dei risultati del database",0,"Il parametro passato a PDOResult non è un PDOStatement");
         }
     }
 
-    public function fetch($mode=GDRCD_FETCH_ASSOC){
+    public function fetch($mode=GDRCD_FETCH_ASSOC)
+    {
         $val=$this->PDOstmt->fetch($this->evaluateConstants($mode));
 
-        if($val!==false){
+        if($val!==false) {
             return $val;
         }
-        else{
+        else {
             throw new DBException("Non ci sono dati da riornare", 0, "Chiamata a metodo fetch su un risultato senza resultset",$this->PDOstmt->queryString);
         }
     }
 
-    public function fetchAll($mode=GDRCD_FETCH_ASSOC){
+    public function fetchAll($mode=GDRCD_FETCH_ASSOC)
+    {
         $val=$this->PDOstmt->fetchAll($this->evaluateConstants($mode));
 
-        if($val!==false){
+        if($val!==false) {
             return $val;
         }
-        else{
+        else {
             throw new DBException("Non ci sono dati da riornare", 0, "Chiamata a metodo fetchAll su un risultato senza resultset",$this->PDOstmt->queryString);
         }
     }
 
-    public function numRows(){
+    public function numRows()
+    {
         $chunks=explode(' ', $this->PDOstmt->queryString);
-        if($chunks[0]=='select'){
+        if ($chunks[0]=='select') {
             /**
              * Sfortunatamente PDO non ha un metodo che ritorni effettivamente
              * il numero di righe nel recordset. Ce lo dobbiamo calcolare.
@@ -287,12 +300,13 @@ class PDOResult implements DbResult{
             $count=DB::query($new_query,true);
             return (int)$count['N'];
         }
-        else{
+        else {
             return $this->PDOstmt->rowCount();
         }
     }
 
-    public function free(){
+    public function free()
+    {
         $this->PDOstmt->closeCursor();
     }
 
@@ -305,8 +319,7 @@ class PDOResult implements DbResult{
      */
     private function evaluateConstants($mode)
     {
-        switch ($mode)
-        {
+        switch ($mode) {
             case self::FETCH_ASSOC:
                 return PDO::FETCH_ASSOC;
                 break;
@@ -329,7 +342,8 @@ class PDOResult implements DbResult{
 /**
  * Rappresenta uno Statement PDO
  */
-class DBPDOStatement extends DBStatement{
+class DBPDOStatement extends DBStatement
+{
     public function resetStatement(){
         $this->statement->closeCursor();
     }

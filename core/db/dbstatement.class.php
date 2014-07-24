@@ -6,19 +6,22 @@
  * @package \GDRCD\core\db
  * @author Stefano "leoblacksoul" Campanella <programming@rel.to>
  */
-abstract class DBStatement{
+abstract class DBStatement
+{
     protected $statement;
 
-    public function __construct($stmt){
-        if(!empty($stmt)){
+    public function __construct($stmt)
+    {
+        if (!empty($stmt)) {
             $this->statement=$stmt;
         }
-        else{
+        else {
             throw new DBException("Errore nella preparazione delle istruzioni del database",0,'Passato un argomento vuoto al posto di uno statement a DBStatement');
         }
     }
 
-    public function getStatement(){
+    public function getStatement()
+    {
         return $this->statement;
     }
 

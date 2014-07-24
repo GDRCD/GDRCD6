@@ -4,7 +4,8 @@
  * Gli oggetti ritornati dalle query e dagli statement implementano questi metodi
  * @package \GDRCD\core\db
  */
-interface DbResult{
+interface DbResult
+{
   /**
    * Fetches the next row from the resultset of the query
    * @param $mode: Specifies the format of the returned result.

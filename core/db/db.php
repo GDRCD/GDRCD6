@@ -54,14 +54,16 @@ class DB
     {
         self::loadDriver($driver);
         $class=new ReflectionClass($driver);
-        if($class->implementsInterface('DatabaseDriver')){
+        if ($class->implementsInterface('DatabaseDriver')){
             self::$dbObj=new $driver($host,$user,$passwd,$dbName,$additional);
-        }else{
+        }
+        else {
             throw new DBException("Il driver specificato non sembra essere il driver di un database!");
         }
     }
 
-    public static function disconnect(){
+    public static function disconnect()
+    {
         self::$dbObj->close();
     }
 
@@ -70,14 +72,16 @@ class DB
      */
     public static function __callStatic($method, $params = null)
     {
-        if(!empty(self::$dbObj) and method_exists(self::$dbObj, $method)){
+        if (!empty(self::$dbObj) and method_exists(self::$dbObj, $method)){
             return call_user_func_array(array(self::$dbObj,$method), $params);
-        }else{
+        }
+        else {
             throw new DBException("Il metodo ".$method." non esiste!");
         }
     }
 
-    public static function loadDriver($driver){
+    public static function loadDriver($driver)
+    {
         $driver_file=dirname(__FILE__) . GDRCD_DS . 'driver.' . strtolower($driver) . '.php';
         if (file_exists($driver_file)) {
             require_once($driver_file);
