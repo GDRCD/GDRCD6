@@ -1,8 +1,10 @@
 <?php
-
 /**
  * Astrazione del database per il driver mysqli
+ * @package \GDRCD\core\db
+ * @author Stefano "leoblacksoul" Campanella <programming@rel.to>
  */
+
 class MysqlI implements DatabaseDriver{
     private $DBObj;
     private $activeTransaction=false;

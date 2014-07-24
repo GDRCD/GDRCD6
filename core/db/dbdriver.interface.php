@@ -1,8 +1,9 @@
 <?php
 /**
  * Interfaccia per tutti i Driver dei Database
- * Definisce i metodi per poter venire utilizzato dal layer di astrazione del DB
- * @package \GDRCD\core\driver
+ * Definisce i metodi per poter usare la classe dal layer di astrazione del DB
+ * @package \GDRCD\core\db
+ * @author Stefano "leoblacksoul" Campanella <programming@rel.to>
  */
 interface DatabaseDriver
 {

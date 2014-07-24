@@ -1,8 +1,10 @@
 <?php
 /**
  * Rappresenta un prepared statement del DB
- * Non è inteso per essere usato da solo ma passato come parametro ai metodi
- * dei driver del Database
+ * Non è inteso per essere usato dagli utenti, ma solo passato come parametro ai
+ * metodi dei driver del Database
+ * @package \GDRCD\core\db
+ * @author Stefano "leoblacksoul" Campanella <programming@rel.to>
  */
 abstract class DBStatement{
     protected $statement;

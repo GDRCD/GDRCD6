@@ -1,7 +1,8 @@
 <?php
-
 /**
  * Interfaccia per tutti i risultati ottenuti dalle query
+ * Gli oggetti ritornati dalle query e dagli statement implementano questi metodi
+ * @package \GDRCD\core\db
  */
 interface DbResult{
   /**

@@ -1,4 +1,13 @@
 <?php
+/**
+ * Rappresenta l'interfaccia principale per accedere layer di astrazione di GDRCD
+ * Si occupa di scegliere il driver corretto del database e di inviargli le query da eseguire.
+ * Questa è una classe completamente statica, utile semplicemente per la selezione del driver
+ * e per poter accedere al database con un nome unico, non legato al nome del driver.
+ * @package \GDRCD\core\db
+ * @author Stefano "leoblacksoul" Campanella <programming@rel.to>
+ */
+
 GDRCD::load('db' . GDRCD_DS . 'dbdriver.interface.php');
 GDRCD::load('db' . GDRCD_DS . 'dbresult.interface.php');
 GDRCD::load('exceptions' . GDRCD_DS . 'db.exception.php');
@@ -19,13 +28,6 @@ define('GDRCD_FILTER_STRING','s');
 define('GDRCD_FILTER_FLOAT','d');
 define('GDRCD_FILTER_BINARY','b');
 
-/**
- * Rappresenta l'interfaccia principale per accedere layer di astrazione di GDRCD
- * Si occupa di scegliere il driver corretto del database e di inviargli le query da eseguire.
- * Questa è una classe completamente statica, utile semplicemente per la selezione del driver
- * e per poter accedere al database con un nome unico, non legato al nome del driver.
- *
- */
 class DB
 {
     /**

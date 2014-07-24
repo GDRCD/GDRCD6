@@ -1,16 +1,9 @@
 <?php
 /**
- * PDO Mysql Driver
- * La classe in questione adopera PDO per dialogare con un database mysql.
- * Lo scopo non è implementare PDO e quindi rendere usabili i metodi dello stesso mediante un extends
- * ma piuttosto fornire un interfaccia per l'utilizzo di PDO (non è un controsenso se si pensa che ha
- * i suoi limiti e qualcuno potrebbe dover necessitare di altro), così che solo i metodi di questa classe
- * saranno utilizzati e gli stessi standardizzeranno il modo con cui vengono eseguite le query nel CMS.
- * Tutto questo, permetterà di adoperare i più svariati driver (odbc, mysqli, sqlserver) senza dover
- * riscrivere altro in tutto l'engine (per maggiori info, googlate "abstraction layer").
- * IMPORTANTE: per il presente driver è richiesto che nel php.ini sia abilitata l'estensione php_pdo_mysql.dll
- *
- * @package \GDRCD\core\driver
+ * La classe adopera PDO per dialogare con un database mysql.
+ * IMPORTANTE: per il presente driver è richiesto che nel php.ini sia abilitata l'estensione pdo e pdo_mysql
+ * @package \GDRCD\core\db
+ * @author Stefano "leoblacksoul" Campanella <programming@rel.to> e Salvatore "Blanks" Rotondo <s.rotondo90@gmail.com>
  */
 class PdoMysql implements DatabaseDriver
 {
