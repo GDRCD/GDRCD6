@@ -39,7 +39,7 @@ class PdoMysql implements DatabaseDriver
             );
         }
         catch (PDOException $e){
-            throw new DBException($e->getMessage());
+            throw new DBException('Impossibile connettersi al Database',0,$e->getMessage());
         }
     }
 
