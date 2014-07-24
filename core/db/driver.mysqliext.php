@@ -5,7 +5,7 @@
  * @author Stefano "leoblacksoul" Campanella <programming@rel.to>
  */
 
-class MysqlI implements DatabaseDriver
+class MysqlIExt implements DatabaseDriver
 {
     private $DBObj;
     private $activeTransaction=false;
