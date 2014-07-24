@@ -67,10 +67,7 @@ class GDRCD
         self::$self =& $this;
         $this->loadApplicationSettings();
 
-        $dbSett=$this->getApplicationSetting('db');
-        if(!empty($dbSett)){//Initialize the DB only if it is configured
-            $this->DBBootstrap();
-        }
+        $this->DBBootstrap();
     }
 
 
@@ -88,7 +85,7 @@ class GDRCD
     public function getControllerInstance($controller, $forceNewInstance = false)
     {
         if (!isset($this->controllerInstances[$controller])) {
-
+            $controller=(string)$controller;
             $this->controllerInstances[$controller] = new $controller();
             return $this->controllerInstances[$controller];
 
@@ -142,7 +139,8 @@ class GDRCD
      * @return la configurazione o il gruppo di configurazioni da caricare.
      *          Null se la configurazione richiesta non esiste
      */
-    public function getApplicationSetting($name){
+    public function getApplicationSetting($name)
+    {
         if(isset($this->appSettings[$name])){
             return $this->appSettings[$name];
         }
@@ -152,8 +150,9 @@ class GDRCD
     /**
      * Carica le configurazioni dell'applicazione corrente
      */
-    private function loadApplicationSettings(){
-        $settings=dirname(__FILE__) . GDRCD_DS .
+    private function loadApplicationSettings()
+    {
+        $settings=dirname(dirname(__FILE__)) . GDRCD_DS .
                 'application' . GDRCD_DS .
                 $this->currentApplication() . GDRCD_DS .
                 'application.inc.php';
@@ -167,7 +166,7 @@ class GDRCD
             throw new GDRCDException("Impossibile Avviare l'applicazione",
                                     0,
                                     "File di configurazione dell'applicazione ".
-                                        $this->currentApplication()." non trovato",
+                                        $this->currentApplication()." non trovato: ".$settings,
                                     GDRCD_FATAL);
         }
     }
@@ -180,8 +179,15 @@ class GDRCD
         self::load("db/db.php");
 
         $set=$this->getApplicationSetting('db');
-        DB::connect($set['driver'], $set['host'], $set['user'], $set['password'], $set['database'], $set['additional']);
-        $this->coreInstances['DB']=DB;//TODO incompatibile con getCoreInstance()
+        if(!empty($set['driver']) && !empty($set['host']) && !empty($set['user']) && !empty($set['database'])){
+            DB::connect($set['driver'],
+                        $set['host'],
+                        $set['user'],
+                        !empty($set['password'])?$set['password']:null,
+                        $set['database'],
+                        !empty($set['additional'])?$set['additional']:array());
+            //TODO aggiungere il DB come componente del core?
+        }
     }
 
     /**
@@ -192,7 +198,8 @@ class GDRCD
      *                       in caso che il caricamento fallisca
      * @throws GDRCDEXception in caso di fallimento
      */
-    public static function load($path,$err=''){
+    public static function load($path,$err='')
+    {
         $className =
             dirname(__FILE__)
             . GDRCD_DS
@@ -260,7 +267,6 @@ class GDRCD
     private function autoloadRegister()
     {
         spl_autoload_register(array($this, 'loadController'));
-        spl_autoload_register(array('DB','loadDriver'));
     }
 
 
@@ -270,7 +276,6 @@ class GDRCD
     private function autoloadUnregister()
     {
         spl_autoload_unregister(array($this, 'loadController'));
-        spl_autoload_unregister(array('DB','loadDriver'));
     }
 
 
