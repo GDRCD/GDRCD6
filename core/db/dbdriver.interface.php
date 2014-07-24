@@ -74,7 +74,9 @@ interface DatabaseDriver
      * Esegue il primo passo di preparazione di un Prepared Statement
      * @param (string) $sql: la query da eseguire con gli adeguati placeholder
      *                       Sono supportati placeholder indicati con ? o
-     *                       placeholder nominati secondo la sintassi ':nome'
+     *                       placeholder nominati secondo la sintassi ':nome'.
+     *                       NON mischiare placeholder nominati e non nella stessa
+     *                       query
      * @return un oggetto DbStatement
      */
     public function prepare($sql);
@@ -88,7 +90,7 @@ interface DatabaseDriver
      *                              Per i placeholder con ? deve essere l'indice
      *                              numerico corrispondente alla posizione del
      *                              parametro nella query, iniziando il conteggio
-     *                              da 1
+     *                              da 1.
      * @param (mixed)$data: il valore effettivo del dato
      * @param (string)$type Indica la natura del dato sul database:
      *                          GDRCD_FILTER_INT se è un numero intero
