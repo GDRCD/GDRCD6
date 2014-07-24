@@ -10,13 +10,14 @@ class MysqlIExt implements DatabaseDriver
     private $DBObj;
     private $activeTransaction=false;
 
-    public function __construct($host, $user, $pass, $database,$additional)
+    public function __construct($host, $user, $pass, $database, $additional)
     {
         $port=null;
         if (!empty($additional['port'])) {
             $port=(int)$additional['port'];
         }
 
+        $socket=null;
         if (!empty($additional['socket'])) {
             $socket=$additional['socket'];
         }
