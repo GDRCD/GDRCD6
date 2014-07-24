@@ -10,6 +10,7 @@
 
 GDRCD::load('db' . GDRCD_DS . 'dbdriver.interface.php');
 GDRCD::load('db' . GDRCD_DS . 'dbresult.interface.php');
+GDRCD::load('db' . GDRCD_DS . 'dbstatement.class.php');
 GDRCD::load('exceptions' . GDRCD_DS . 'db.exception.php');
 
 /**
@@ -51,6 +52,7 @@ class DB
      */
     public static function connect($driver, $host, $user, $passwd, $dbName,$additional=array())
     {
+        self::loadDriver($driver);
         $class=new ReflectionClass($driver);
         if($class->implementsInterface('DatabaseDriver')){
             self::$dbObj=new $driver($host,$user,$passwd,$dbName,$additional);
