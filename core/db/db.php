@@ -2,8 +2,7 @@
 /**
  * Rappresenta l'interfaccia principale per accedere layer di astrazione di GDRCD
  * Si occupa di scegliere il driver corretto del database e di inviargli le query da eseguire.
- * Questa è una classe completamente statica, utile semplicemente per la selezione del driver
- * e per poter accedere al database con un nome unico, non legato al nome del driver.
+ * Serve come punto principale di definizione delle constanti di tutto ciò che concerne il db
  * @package \GDRCD\core\db
  * @author Stefano "leoblacksoul" Campanella <programming@rel.to>
  */
@@ -62,12 +61,7 @@ class DB
     /**
      * The database driver object
      */
-    static private $dbObj;
-
-    /**
-     * Classe statica, non è pensata per venire istanziata
-     */
-    private function __construct(){}
+    private $dbObj;
 
     /**
      * Crea la connessione con il database
@@ -75,47 +69,63 @@ class DB
      * l'interfaccia DatabaseDriver
      * @see DatabaseDriver::__construct()
      * @throws DBException in caso di fallimento della connessione
-     *
-     * TODO considerare se è il caso di non usare $driver e leggere direttamente da GDRCD_DATABASE_DRIVER
      */
-    public static function connect($driver, $host, $user, $passwd, $dbName,$additional=array())
+    public function __construct($driver, $host, $user, $passwd, $dbName,$additional=array())
     {
-        self::loadDriver($driver);
+        $this->loadDriver($driver);
         $class=new ReflectionClass($driver);
         if ($class->implementsInterface('DatabaseDriver')){
-            self::$dbObj=new $driver($host,$user,$passwd,$dbName,$additional);
+            $this->dbObj=new $driver($host,$user,$passwd,$dbName,$additional);
         }
         else {
-            throw new DBException("Il driver specificato non sembra essere il driver di un database!");
+            throw new DBException("Impossibile usare il sistema di collegamento al database prescelto",
+                                    0,
+                                    "Il driver specificato '".$driver."' non sembra essere il driver di un database!");
         }
     }
 
-    public static function disconnect()
+    /**
+     * Disconnette il database attualmente collegato
+     */
+    public function disconnect()
     {
-        self::$dbObj->close();
+        $this->dbObj->close();
     }
 
     /**
      * Metodo interno per PHP, usato per reindirizzare le chiamate al driver del DB
      */
-    public static function __callStatic($method, $params = null)
+    public function __call($method, $params = null)
     {
-        if (!empty(self::$dbObj) and method_exists(self::$dbObj, $method)){
-            return call_user_func_array(array(self::$dbObj,$method), $params);
+        if (!empty($this->dbObj) and method_exists($this->dbObj, $method)){
+            return call_user_func_array(array($this->dbObj,$method), $params);
         }
         else {
-            throw new DBException("Il metodo ".$method." non esiste!");
+            throw new DBException("Errore nell'invocazione del database",
+                                    0,
+                                    "Il metodo del database '".$method."' non esiste!");
         }
     }
 
-    public static function loadDriver($driver)
+    /**
+     * Carica il file di un driver del database
+     * @param (string) $driver: il nome della classe da caricare
+     * @throws DBException se il file del driver non esiste
+     */
+    public function loadDriver($driver)
     {
         $driver_file=dirname(__FILE__) . GDRCD_DS . 'driver.' . strtolower($driver) . '.php';
         if (file_exists($driver_file)) {
             require_once($driver_file);
         }
         else {
-            throw new DBException("Il driver speficato non esiste");
+            throw new DBException("Impossibile trovare un sistema di collegamento al database",
+                                    0,
+                                    "Il file del driver del database '".$driver."' non esiste");
         }
+    }
+
+    public function __destruct(){
+        $this->disconnect();
     }
 }
