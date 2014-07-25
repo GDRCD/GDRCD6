@@ -13,14 +13,6 @@ GDRCD::load('db' . GDRCD_DS . 'dbresult.interface.php');
 GDRCD::load('db' . GDRCD_DS . 'dbstatement.class.php');
 GDRCD::load('exceptions' . GDRCD_DS . 'db.exception.php');
 
-/**
- * Tipo di formati per i parametri dei prepared statements
- */
-define('GDRCD_FILTER_INT','i');
-define('GDRCD_FILTER_STRING','s');
-define('GDRCD_FILTER_FLOAT','d');
-define('GDRCD_FILTER_BINARY','b');
-
 class DB
 {
     /**
