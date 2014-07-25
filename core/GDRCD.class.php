@@ -176,17 +176,17 @@ class GDRCD
      */
     private function DBBootstrap()
     {
-        self::load("db/db.php");
+        $this->loadCore("db","db");
 
         $set=$this->getApplicationSetting('db');
         if(!empty($set['driver']) && !empty($set['host']) && !empty($set['user']) && !empty($set['database'])){
-            DB::connect($set['driver'],
-                        $set['host'],
-                        $set['user'],
-                        !empty($set['password'])?$set['password']:null,
-                        $set['database'],
-                        !empty($set['additional'])?$set['additional']:array());
-            //TODO aggiungere il DB come componente del core?
+            $this->coreInstances['DB']=new DB($set['driver'],
+                       $set['host'],
+                       $set['user'],
+                       !empty($set['password'])?$set['password']:null,
+                       $set['database'],
+                       !empty($set['additional'])?$set['additional']:array());
+
         }
     }
 
@@ -213,8 +213,8 @@ class GDRCD
             if (is_file($className) and is_readable($className)) {
                 self::$includedFiles[] = $className;
                 require $className;
-
-            } else {
+            }
+            else {
                 throw new GDRCDException("Errore nell'inclusione di un file",0,$err,GDRCD_FATAL);
             }
         }
@@ -226,13 +226,21 @@ class GDRCD
         * Se il file non esiste o non dispone dei permessi di lettura
         * il metodo ritornerà un eccezione.
         *
-        * @param (string) $className <Il nome della classe di core richiesta>
+        * @param (string) $className: <Il nome della classe di core richiesta>
+        * @param (string) $path: il percorso il cui centrare la classe da caricare
+        *                        Deve essere relativo alla cartella dove si trovano
+        *                        le cartelle application, core, etc
         *
         * @throws Exception
     */
-    private function loadCore($className)
+    private function loadCore($className,$path='')
     {
-        self::load($className.'.class.php','Il Core file '.$className." non esiste o non è accessibile");
+        if (!empty($path) and $path[strlen($path)-1]!=GDRCD_DS) {
+            $path.=GDRCD_DS;
+        }
+
+        self::load($path . $className . '.class.php',
+                   'Il Core file ' . $className . " non esiste o non è accessibile");
     }
 
 
