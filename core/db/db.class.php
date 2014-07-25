@@ -7,10 +7,10 @@
  * @author Stefano "leoblacksoul" Campanella <programming@rel.to>
  */
 
-GDRCD::load('db' . GDRCD_DS . 'dbdriver.interface.php');
-GDRCD::load('db' . GDRCD_DS . 'dbresult.interface.php');
-GDRCD::load('db' . GDRCD_DS . 'dbstatement.class.php');
-GDRCD::load('exceptions' . GDRCD_DS . 'db.exception.php');
+GDRCD::load("core" . GDRCD_DS . 'db' . GDRCD_DS . 'dbdriver.interface.php');
+GDRCD::load("core" . GDRCD_DS . 'db' . GDRCD_DS . 'dbresult.interface.php');
+GDRCD::load("core" . GDRCD_DS . 'db' . GDRCD_DS . 'dbstatement.class.php');
+GDRCD::load("core" . GDRCD_DS . 'exceptions' . GDRCD_DS . 'db.exception.php');
 
 class DB
 {

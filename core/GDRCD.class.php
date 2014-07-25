@@ -59,7 +59,7 @@ class GDRCD
                 self::$includedFiles[] = dirname(__FILE__) . GDRCD_DS . 'GDRCD.class.php';
         self::$self = $this;
 
-        $this->load('exceptions' . GDRCD_DS . "GDRCD.exception.php");
+        self::load("core" . GDRCD_DS . 'exceptions' . GDRCD_DS . "GDRCD.exception.php");
 
         $this->loadCore('Controller');
         $this->autoloadRegister();
@@ -105,13 +105,14 @@ class GDRCD
         * dell'oggetto, altrimenti ritorna la prima istanza archiviata.
         *
         * @param (string) $coreClass <Il nome della classe core richiesta>
+        * @param (string) $path: @see self::loadCore()
         * @param (bool) $forceNewInstance <Forza a tornare una nuova istanza>
         *
         * @return object <L'istanza richiesta>
     */
-    public function getCoreInstance($coreClass, $forceNewInstance = false)
+    public function getCoreInstance($coreClass, $path='core', $forceNewInstance = false)
     {
-        $this->loadCore($coreClass);
+        $this->loadCore($coreClass,$path);
 
 
         if (empty($this->coreInstances[$coreClass]) || $forceNewInstance) {
@@ -178,7 +179,7 @@ class GDRCD
      */
     private function DBBootstrap()
     {
-        $this->loadCore("db","db");
+        $this->loadCore("db","core" . GDRCD_DS . "db");
 
         $set=$this->getApplicationSetting('db');
         if(!empty($set['driver']) && !empty($set['host']) && !empty($set['user']) && !empty($set['database'])){
@@ -195,15 +196,16 @@ class GDRCD
     /**
      * Generico caricatore di file e classi nel sistema.
      * Metodo alternativo a require_once e include_once
-     * @param (string) $path: il percorso del file da includere
+     * @param (string) $path: il percorso del file da includere, relativo alla
+     *                        radice del framework
      * @param (string) $err: Un eventuale stringa di errore da inviare
      *                       in caso che il caricamento fallisca
      * @throws GDRCDException in caso di fallimento
      */
-    public function load($path,$err='')
+    public static function load($path,$err='')
     {
         $className =
-            dirname(__FILE__)
+            dirname(dirname(__FILE__))
             . GDRCD_DS
             . $path;
 
@@ -230,18 +232,18 @@ class GDRCD
         *
         * @param (string) $className: <Il nome della classe di core richiesta>
         * @param (string) $path: il percorso il cui centrare la classe da caricare
-        *                        Deve essere relativo alla cartella dove si trovano
-        *                        le cartelle application, core, etc
+        *                        Deve essere relativo alla radice del framework.
+        *                        Default carica file dalla cartella core
         *
         * @throws Exception
     */
-    private function loadCore($className,$path='')
+    private function loadCore($className,$path='core')
     {
         if (!empty($path) and $path[strlen($path)-1]!=GDRCD_DS) {
             $path.=GDRCD_DS;
         }
 
-        $this->load($path . $className . '.class.php',
+        self::load($path . $className . '.class.php',
                    'Il Core file ' . $className . " non esiste o non è accessibile");
     }
 
@@ -258,7 +260,7 @@ class GDRCD
     */
     private function loadController($className)
     {
-        $this->load('application'
+        self::load('application'
             . GDRCD_DS
             . $this->currentApplication()
             . GDRCD_DS
