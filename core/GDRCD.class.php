@@ -44,7 +44,7 @@ class GDRCD
         * questo permetterà di accedere alla classe in un istruzione singleton usando la medesima istanza
         * per tutti i richiami.
     */
-    static public $self;
+    static private $self;
 
 
     /**
@@ -57,19 +57,21 @@ class GDRCD
     {
         if (!in_array(dirname(__FILE__) . GDRCD_DS . 'GDRCD.class.php', self::$includedFiles))
                 self::$includedFiles[] = dirname(__FILE__) . GDRCD_DS . 'GDRCD.class.php';
+        self::$self = $this;
 
-        //Carica l'eccezione generica
-        self::load('exceptions' . GDRCD_DS . "GDRCD.exception.php");
+        $this->load('exceptions' . GDRCD_DS . "GDRCD.exception.php");
 
         $this->loadCore('Controller');
         $this->autoloadRegister();
         $this->application = $application;
-        self::$self =& $this;
         $this->loadApplicationSettings();
 
         $this->DBBootstrap();
     }
 
+    public static function getGDRCD(){
+        return self::$self;
+    }
 
     /**
         * Fornisce l'istanza del $controller chiamato.
@@ -196,9 +198,9 @@ class GDRCD
      * @param (string) $path: il percorso del file da includere
      * @param (string) $err: Un eventuale stringa di errore da inviare
      *                       in caso che il caricamento fallisca
-     * @throws GDRCDEXception in caso di fallimento
+     * @throws GDRCDException in caso di fallimento
      */
-    public static function load($path,$err='')
+    public function load($path,$err='')
     {
         $className =
             dirname(__FILE__)
@@ -239,7 +241,7 @@ class GDRCD
             $path.=GDRCD_DS;
         }
 
-        self::load($path . $className . '.class.php',
+        $this->load($path . $className . '.class.php',
                    'Il Core file ' . $className . " non esiste o non è accessibile");
     }
 
@@ -256,7 +258,7 @@ class GDRCD
     */
     private function loadController($className)
     {
-        self::load('application'
+        $this->load('application'
             . GDRCD_DS
             . $this->currentApplication()
             . GDRCD_DS
