@@ -14,14 +14,6 @@ GDRCD::load('db' . GDRCD_DS . 'dbstatement.class.php');
 GDRCD::load('exceptions' . GDRCD_DS . 'db.exception.php');
 
 /**
- * Tipi di formati per i risultati ricevibili dal database
- */
-define('GDRCD_FETCH_ASSOC',1);
-define('GDRCD_FETCH_NUM',2);
-define('GDRCD_FETCH_BOTH',3);
-define('GDRCD_FETCH_OBJ',4);
-
-/**
  * Tipo di formati per i parametri dei prepared statements
  */
 define('GDRCD_FILTER_INT','i');
@@ -31,6 +23,50 @@ define('GDRCD_FILTER_BINARY','b');
 
 class DB
 {
+    /**
+     * Costanti per indicare il formato dei dati da ritornare da una query
+     */
+
+    /**
+     * Un array associativo, le cui chiavi sono i nomi dei campi ritornati dalla query
+     */
+    const FETCH_ASSOC=1;
+    /**
+     * Un array classico con indici numerici
+     */
+    const FETCH_NUM=2;
+    /**
+     * Un array che contiene sia i dati in forma associativa che in indici numerici
+     */
+    const FETCH_BOTH=3;
+    /**
+     * Un oggetto di classe StdClass, ogni dato è salvato nell'attributo pubblico
+     * corrispondente al nome del campo ritornato dalla query
+     */
+    const FETCH_OBJ=4;
+
+    /**
+     * Costanti da usare per indicare la tipologia di dato dei parametri dei
+     * Prepared Statements
+     */
+
+    /**
+     * Il dato fornito è un intero
+     */
+    const TYPE_INT='i';
+    /**
+     * Il dato fornito è una stringa
+     */
+    const TYPE_STRING='s';
+    /**
+     * Il dato fornito è un numero decimale
+     */
+    const TYPE_FLOAT='d';
+    /**
+     * Il dato fornito contiene dati binari
+     */
+    const TYPE_BINARY='b';
+
     /**
      * The database driver object
      */

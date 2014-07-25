@@ -30,7 +30,7 @@ interface DatabaseDriver
      *            primo record del resultset nel formato specificato
      *            da $mode. Altrimenti viene ritornato un oggetto DBResult
      */
-    public function query($sql, $one_shot=false, $mode=GDRCD_FETCH_ASSOC);
+    public function query($sql, $one_shot=false, $mode=DB::FETCH_ASSOC);
 
     /**
      * Esegue l'escape di un generico parametro da inserire in una query SQL
@@ -70,7 +70,7 @@ interface DatabaseDriver
      * @throws DBException se il prepared statement fallisce
      * @return @see self::query()
      */
-    public function stmtQuery($sql, $parameters, $one_shot=false, $mode=GDRCD_FETCH_ASSOC);
+    public function stmtQuery($sql, $parameters, $one_shot=false, $mode=DB::FETCH_ASSOC);
 
     /**
      * Esegue il primo passo di preparazione di un Prepared Statement
@@ -100,7 +100,7 @@ interface DatabaseDriver
      *                          GDRCD_FILTER_STRING se è testo o una data
      *                          GDRCD_FILTER_BINARY se sono dati binari
      */
-    public function bind($stmt, $placeholder, $data, $type);
+    public function bind($stmt, $placeholder, $data, $type=DB::TYPE_STRING);
 
     /**
      * Esegue un Prepared Statement
@@ -108,7 +108,7 @@ interface DatabaseDriver
      * @param (bool)$one_shot: @see self::query()
      * @param (int)$mode: @see self::query()
      */
-    public function exec($stmt, $one_shot=false, $mode=GDRCD_FETCH_ASSOC);
+    public function exec($stmt, $one_shot=false, $mode=DB::FETCH_ASSOC);
 
     /**
      * Supporto alle Transazioni

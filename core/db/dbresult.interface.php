@@ -12,7 +12,7 @@ interface DbResult
    * @return the row of data in the format specified by $mode: RESULT_ARRAY returns an array (int indexes),
    * RESULT_ASSOC returns an associative array, RESULT_OBJECT returns an object of StdClass
    */
-  public function fetch($mode=GDRCD_FETCH_ASSOC);
+  public function fetch($mode=DB::FETCH_ASSOC);
 
   /**
    * Fetches all the rows from the resultset of the query
@@ -22,7 +22,7 @@ interface DbResult
    * RESULT_ASSOC returns an associative array,
    * RESULT_OBJECT returns an object of StdClass
    */
-  public function fetchAll($mode=GDRCD_FETCH_ASSOC);
+  public function fetchAll($mode=DB::FETCH_ASSOC);
 
   /**
    * @return il numero di record ritornati dalla query o il numero di righe

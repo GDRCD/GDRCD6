@@ -35,7 +35,7 @@ class MysqlIExt implements DatabaseDriver
         }
     }
 
-    public function query($sql, $one_shot=false, $mode=GDRCD_FETCH_ASSOC)
+    public function query($sql, $one_shot=false, $mode=DB::FETCH_ASSOC)
     {
         $res=$this->DBObj->query($sql);
 
@@ -71,7 +71,7 @@ class MysqlIExt implements DatabaseDriver
         $this->DBObj->close();
     }
 
-    public function stmtQuery($sql, $parameters, $one_shot=false, $mode=GDRCD_FETCH_ASSOC)
+    public function stmtQuery($sql, $parameters, $one_shot=false, $mode=DB::FETCH_ASSOC)
     {
         $s=$this->prepare($sql);
         foreach ($parameters as $pl=>$data){
@@ -85,12 +85,12 @@ class MysqlIExt implements DatabaseDriver
         return new MysqlIStatement($this->DBObj,$sql);
     }
 
-    public function bind($stmt, $placeholder, $data, $type)
+    public function bind($stmt, $placeholder, $data, $type=DB::TYPE_STRING)
     {
         $stmt->addParam($placeholder,$data,$type);
     }
 
-    public function exec($stmt, $one_shot=false, $mode=GDRCD_FETCH_ASSOC)
+    public function exec($stmt, $one_shot=false, $mode=DB::FETCH_ASSOC)
     {
         $stmt->doRealBind();
         $ex=$stmt->getStatement()->execute();
@@ -196,7 +196,7 @@ class MysqlIResult implements DbResult
         }
     }
 
-    public function fetch($mode=GDRCD_FETCH_ASSOC)
+    public function fetch($mode=DB::FETCH_ASSOC)
     {
         if (empty($this->stmt)) {//Query mode
             return $this->fetchQuery($mode);
@@ -206,7 +206,7 @@ class MysqlIResult implements DbResult
         }
     }
 
-    public function fetchAll($mode=GDRCD_FETCH_ASSOC)
+    public function fetchAll($mode=DB::FETCH_ASSOC)
     {
       $result=array();
       while ($row=$this->fetch($mode)) {
@@ -242,19 +242,19 @@ class MysqlIResult implements DbResult
     private function fetchQuery($mode)
     {
         switch ($mode) {
-            case GDRCD_FETCH_ASSOC:
+            case DB::FETCH_ASSOC:
                 return $this->result->fetch_assoc();
                 break;
 
-            case GDRCD_FETCH_NUM:
+            case DB::FETCH_NUM:
                 return $this->result->fetch_array(MYSQLI_NUM);
                 break;
 
-            case GDRCD_FETCH_BOTH:
+            case DB::FETCH_BOTH:
                 return $this->result->fetch_array(MYSQLI_BOTH);
                 break;
 
-            case GDRCD_FETCH_OBJ:
+            case DB::FETCH_OBJ:
                 return $this->result->fetch_object();
                 break;
         }
@@ -265,10 +265,10 @@ class MysqlIResult implements DbResult
         $this->stmt->getStatement()->fetch();
         $output=array();
         switch ($mode) {
-            case GDRCD_FETCH_BOTH:
+            case DB::FETCH_BOTH:
                 $output=$this->bind_results;
                 //No break!
-            case GDRCD_FETCH_ASSOC:
+            case DB::FETCH_ASSOC:
                 $i=0;
                 foreach($this->fields as $fObj){
                     $output[$fObj->name]=$this->bind_results[$i];
@@ -277,11 +277,11 @@ class MysqlIResult implements DbResult
                 return $output;
                 break;
 
-            case GDRCD_FETCH_NUM:
+            case DB::FETCH_NUM:
                 return $this->bind_results;
                 break;
 
-            case GDRCD_FETCH_OBJ:
+            case DB::FETCH_OBJ:
                 $output=new stdClass();
                 $i=0;
                 foreach($this->fields as $fObj){

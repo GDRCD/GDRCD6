@@ -64,7 +64,7 @@ class PdoMysql implements DatabaseDriver
      *                      Se la query non è di select, viene ritornato il numero
      *                      di record coinvolti nella query eseguita.
 	 */
-    public function query($sql, $one_shot=false, $mode = GDRCD_FETCH_ASSOC)
+    public function query($sql, $one_shot=false, $mode = DB::FETCH_ASSOC)
     {
         try {
             switch (strtolower(substr($sql, 0, strpos($sql,' ')))) {
@@ -111,7 +111,7 @@ class PdoMysql implements DatabaseDriver
      * @throws DBException se il prepared statement fallisce
      * @return @see self::query()
      */
-    public function stmtQuery($sql, $parameters = array(), $one_shot=false, $mode = GDRCD_FETCH_ASSOC)
+    public function stmtQuery($sql, $parameters = array(), $one_shot=false, $mode = DB::FETCH_ASSOC)
     {
         $stmt = $this->prepare($sql);
         foreach($parameters as $pl=>$v){
@@ -133,7 +133,7 @@ class PdoMysql implements DatabaseDriver
     /**
      * PDO è più potente e non ha bisogno di indicazioni per filtrare i dati
      */
-    public function bind($stmt, $placeholder, $data, $filter)
+    public function bind($stmt, $placeholder, $data, $type=DB::TYPE_STRING)
     {
         $real_stmt=$stmt->getStatement();
         try{
@@ -144,7 +144,7 @@ class PdoMysql implements DatabaseDriver
         }
     }
 
-    public function exec($stmt, $one_shot=false, $mode=GDRCD_FETCH_ASSOC)
+    public function exec($stmt, $one_shot=false, $mode=DB::FETCH_ASSOC)
     {
         $real_stmt=$stmt->getStatement();
         $sql=$real_stmt->queryString;
@@ -258,7 +258,7 @@ class PDOResult implements DbResult
         }
     }
 
-    public function fetch($mode=GDRCD_FETCH_ASSOC)
+    public function fetch($mode=DB::FETCH_ASSOC)
     {
         $val=$this->PDOstmt->fetch($this->evaluateConstants($mode));
 
@@ -270,7 +270,7 @@ class PDOResult implements DbResult
         }
     }
 
-    public function fetchAll($mode=GDRCD_FETCH_ASSOC)
+    public function fetchAll($mode=DB::FETCH_ASSOC)
     {
         $val=$this->PDOstmt->fetchAll($this->evaluateConstants($mode));
 
@@ -320,19 +320,19 @@ class PDOResult implements DbResult
     private function evaluateConstants($mode)
     {
         switch ($mode) {
-            case self::FETCH_ASSOC:
+            case DB::FETCH_ASSOC:
                 return PDO::FETCH_ASSOC;
                 break;
 
-            case self::FETCH_NUM:
+            case DB::FETCH_NUM:
                 return PDO::FETCH_NUM;
                 break;
 
-            case self::FETCH_BOTH:
+            case DB::FETCH_BOTH:
                 return PDO::FETCH_BOTH;
                 break;
 
-            case self::FETCH_OBJ:
+            case DB::FETCH_OBJ:
                 return PDO::FETCH_OBJ;
                 break;
         }
