@@ -26,8 +26,7 @@ abstract class DBStatement
     }
 
     /**
-     * Annulla di dati legati allo statement corrente per poter rieseguire la
-     * query con altri dati
+     * Esegue lo statement
      */
-    abstract public function resetStatement();
+    abstract public function execute();
 }

@@ -149,7 +149,7 @@ class PdoMysql implements DatabaseDriver
         $real_stmt=$stmt->getStatement();
         $sql=$real_stmt->queryString;
         try{
-            $real_stmt->execute();
+            $stmt->execute();
 
             switch (trim(strtolower(substr($sql, 0, strpos($sql, ' '))))) {
                 case 'select':
@@ -344,8 +344,8 @@ class PDOResult implements DbResult
  */
 class DBPDOStatement extends DBStatement
 {
-    public function resetStatement(){
-        $this->statement->closeCursor();
+    public function execute(){
+        return $this->getStatement()->execute();
     }
 }
 

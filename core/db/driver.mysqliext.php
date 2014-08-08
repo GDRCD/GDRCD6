@@ -315,10 +315,10 @@ class MysqlIStatement extends DBStatement
         parent::__construct($db->prepare($sql));
     }
 
-    public function resetStatement()
+    public function execute()
     {
-        $this->getStatement()->free_result();
-        $this->getStatement()->reset();
+        $this->temp_params=array();
+        return $this->getStatement()->execute();
     }
 
     /**
