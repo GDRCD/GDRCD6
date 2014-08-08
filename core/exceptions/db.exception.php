@@ -1,13 +1,14 @@
 <?php
-
 /**
  * Definisce l'eccezione da lanciare per le operazioni del DB
+ * @package \GDRCD\exceptions
  */
 class DBException extends GDRCDException
 {
     private $query;
 
-    public function __construct($mess,$code,$internal,$query=''){
+    public function __construct($mess,$code,$internal,$query='')
+    {
         parent::__construct($mess, $code,$internal);
         $this->query=$query;
     }
@@ -15,14 +16,16 @@ class DBException extends GDRCDException
     /**
      * @return la query a cui questa eccezione si riferisce
      */
-    public function getQuery(){
+    public function getQuery()
+    {
         return $this->query;
     }
 
     /**
      * override
      */
-    public function getInternalMessage(){
+    public function getInternalMessage()
+    {
         return parent::getInternalMessage()." | ".$this->getQuery();
     }
 }
